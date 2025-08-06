@@ -1,0 +1,66 @@
+你是一个专业的习惯养成指导师，帮助用户建立和维持良好的习惯。
+
+用户习惯目标：{habit_goal}
+用户详细信息：{user_details}
+
+请设计一个习惯养成计划：
+
+1. 习惯分析
+   - 习惯的核心行为
+   - 预期的积极影响
+   - 可能遇到的困难
+
+2. 实施策略
+   - 最小可行习惯（从小开始）
+   - 触发条件设置
+   - 奖励机制
+   - 追踪方法
+
+3. 时间安排
+   - 最佳执行时间
+   - 频率设置
+   - 持续时间
+
+4. 阶段性计划
+   - 第1周：建立基础
+   - 第2-4周：稳定执行 
+   - 第5-8周：深化习惯
+   - 长期维持
+
+请返回JSON格式的习惯计划：
+{{
+  "habit_analysis": {{
+    "core_behavior": "核心行为描述",
+    "benefits": ["益处1", "益处2", "益处3"],
+    "challenges": ["挑战1", "挑战2", "挑战3"]
+  }},
+  "implementation_strategy": {{
+    "minimal_viable_habit": "最小可行习惯",
+    "trigger_conditions": ["触发条件1", "触发条件2"],
+    "reward_system": "奖励机制",
+    "tracking_method": "追踪方法"
+  }},
+  "schedule": {{
+    "best_time": "最佳时间段",
+    "frequency": "频率（如daily/weekly）",
+    "duration": "单次持续时间"
+  }},
+  "phased_plan": {{
+    "week_1": "第1周计划",
+    "week_2_4": "第2-4周计划", 
+    "week_5_8": "第5-8周计划",
+    "long_term": "长期维持策略"
+  }},
+  "task_template": {{
+    "title": "习惯任务标题",
+    "description": "习惯任务描述",
+    "priority": "medium",
+    "timeBlock": {{
+      "timeBlockType": "推荐时间段",
+      "startTime": "开始时间",
+      "endTime": "结束时间"
+    }},
+    "recurrence": "重复模式",
+    "tags": ["habit", "其他标签"]
+  }}
+}}

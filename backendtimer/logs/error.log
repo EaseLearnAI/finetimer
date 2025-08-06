@@ -1,0 +1,9 @@
+{"level":"error","message":"获取番茄钟记录失败: Cast to ObjectId failed for value \"nonexistent\" (type string) at path \"_id\" for model \"Pomodoro\"","service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.429Z"}
+{"level":"error","message":"获取任务失败: Cast to ObjectId failed for value \"nonexistent\" (type string) at path \"_id\" for model \"Task\"","service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.440Z"}
+{"level":"error","message":"获取任务集失败: Cast to ObjectId failed for value \"nonexistent\" (type string) at path \"_id\" for model \"Collection\"","service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.444Z"}
+{"level":"error","message":"获取番茄钟记录失败: Cast to ObjectId failed for value \"nonexistent\" (type string) at path \"_id\" for model \"Pomodoro\"","service":"aisiri-backend","timestamp":"2025-08-05T14:44:35.724Z"}
+{"level":"error","message":"获取任务失败: Cast to ObjectId failed for value \"nonexistent\" (type string) at path \"_id\" for model \"Task\"","service":"aisiri-backend","timestamp":"2025-08-05T14:44:35.733Z"}
+{"level":"error","message":"获取任务集失败: Cast to ObjectId failed for value \"nonexistent\" (type string) at path \"_id\" for model \"Collection\"","service":"aisiri-backend","timestamp":"2025-08-05T14:44:35.739Z"}
+{"level":"error","message":"获取番茄钟记录失败: Cast to ObjectId failed for value \"nonexistent\" (type string) at path \"_id\" for model \"Pomodoro\"","service":"aisiri-backend","timestamp":"2025-08-05T14:46:02.953Z"}
+{"level":"error","message":"创建任务失败: Task validation failed: quadrant: Cast to Number failed for value \"do\" (type string) at path \"quadrant\"","service":"aisiri-backend","timestamp":"2025-08-05T15:01:58.113Z"}
+{"level":"error","message":"创建番茄钟记录失败: Pomodoro validation failed: mode: `work` is not a valid enum value for path `mode`.","service":"aisiri-backend","timestamp":"2025-08-05T15:03:40.357Z"}

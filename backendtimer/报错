@@ -1,0 +1,269 @@
+(node:19630) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+ FAIL  test/api.test.js
+  ● Console
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "GET / HTTP/1.1" 200 41 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.406Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      MongoDB Connected: localhost
+
+      at log (src/config/database.js:14:13)
+
+    console.log
+      error: 获取番茄钟记录失败: Cast to ObjectId failed for value "nonexistent" (type string) at path "_id" for model "Pomodoro" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.429Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "GET /api/pomodoro/nonexistent HTTP/1.1" 500 170 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.430Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      error: 获取任务失败: Cast to ObjectId failed for value "nonexistent" (type string) at path "_id" for model "Task" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.440Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "GET /api/tasks/nonexistent HTTP/1.1" 500 157 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.441Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      error: 获取任务集失败: Cast to ObjectId failed for value "nonexistent" (type string) at path "_id" for model "Collection" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.444Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "GET /api/collections/nonexistent HTTP/1.1" 500 166 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.445Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+  ● API Tests › should return 404 on GET /api/pomodoro/nonexistent
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 404
+    Received: 500
+
+      16 |   it('should return 404 on GET /api/pomodoro/nonexistent', async () => {
+      17 |     const res = await request(app).get('/api/pomodoro/nonexistent');
+    > 18 |     expect(res.status).toBe(404);
+         |                        ^
+      19 |   });
+      20 |
+      21 |   // 测试任务路由
+
+      at Object.toBe (test/api.test.js:18:24)
+
+  ● API Tests › should return 404 on GET /api/tasks/nonexistent
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 404
+    Received: 500
+
+      22 |   it('should return 404 on GET /api/tasks/nonexistent', async () => {
+      23 |     const res = await request(app).get('/api/tasks/nonexistent');
+    > 24 |     expect(res.status).toBe(404);
+         |                        ^
+      25 |   });
+      26 |
+      27 |   // 测试任务集路由
+
+      at Object.toBe (test/api.test.js:24:24)
+
+  ● API Tests › should return 404 on GET /api/collections/nonexistent
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 404
+    Received: 500
+
+      28 |   it('should return 404 on GET /api/collections/nonexistent', async () => {
+      29 |     const res = await request(app).get('/api/collections/nonexistent');
+    > 30 |     expect(res.status).toBe(404);
+         |                        ^
+      31 |   });
+      32 | });
+
+      at Object.toBe (test/api.test.js:30:24)
+
+ PASS  test/integration.test.js
+  ● Console
+
+    console.log
+      MongoDB Connected: localhost
+
+      at log (src/config/database.js:14:13)
+
+    console.log
+      info: 创建新任务集: 6892049a29296327f728c94a {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.437Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "POST /api/collections HTTP/1.1" 201 230 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.442Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 获取到 1 个任务集 {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.508Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "GET /api/collections HTTP/1.1" 200 264 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.510Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 获取任务集: 6892049a29296327f728c94a {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.515Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "GET /api/collections/6892049a29296327f728c94a HTTP/1.1" 200 230 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.516Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 更新任务集: 6892049a29296327f728c94a {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.527Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "PUT /api/collections/6892049a29296327f728c94a HTTP/1.1" 200 236 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.527Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 创建新任务: 6892049a29296327f728c955 {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.532Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "POST /api/tasks HTTP/1.1" 201 286 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.533Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 获取到 1 个任务 {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.548Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "GET /api/tasks HTTP/1.1" 200 359 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.549Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 获取任务: 6892049a29296327f728c955 {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.553Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "GET /api/tasks/6892049a29296327f728c955 HTTP/1.1" 200 325 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.553Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 更新任务: 6892049a29296327f728c955 {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.557Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "PUT /api/tasks/6892049a29296327f728c955 HTTP/1.1" 200 331 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.557Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 切换任务完成状态: 6892049a29296327f728c955 -> true {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.562Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "PATCH /api/tasks/6892049a29296327f728c955/toggle HTTP/1.1" 200 291 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.562Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 创建新的番茄钟记录: 6892049a29296327f728c960 {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.566Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "POST /api/pomodoro HTTP/1.1" 201 306 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.567Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 获取到 1 个番茄钟记录 {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.570Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "GET /api/pomodoro HTTP/1.1" 200 340 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.570Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 获取番茄钟记录: 6892049a29296327f728c960 {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.572Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "GET /api/pomodoro/6892049a29296327f728c960 HTTP/1.1" 200 306 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.573Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 更新番茄钟记录: 6892049a29296327f728c960 {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.576Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "PUT /api/pomodoro/6892049a29296327f728c960 HTTP/1.1" 200 312 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.576Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 删除番茄钟记录: 6892049a29296327f728c960 {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.579Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "DELETE /api/pomodoro/6892049a29296327f728c960 HTTP/1.1" 200 53 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.579Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 删除任务: 6892049a29296327f728c955 {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.582Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "DELETE /api/tasks/6892049a29296327f728c955 HTTP/1.1" 200 44 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.582Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: 删除任务集: 6892049a29296327f728c94a {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.584Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+    console.log
+      info: ::ffff:127.0.0.1 - - [05/Aug/2025:13:18:18 +0000] "DELETE /api/collections/6892049a29296327f728c94a HTTP/1.1" 200 62 "-" "-" {"service":"aisiri-backend","timestamp":"2025-08-05T13:18:18.585Z"}
+
+      at Console.log (node_modules/winston/lib/winston/transports/console.js:87:23)
+
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+
+Test Suites: 1 failed, 1 passed, 2 total
+Tests:       3 failed, 14 passed, 17 total
+Snapshots:   0 total
+Time:        1.652 s
+Ran all test suites.
