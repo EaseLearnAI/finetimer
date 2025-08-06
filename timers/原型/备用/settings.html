@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=430, initial-scale=1.0, user-scalable=no">
+    <title>AI Secretary - 设置</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', sans-serif;
+            background: #f2f2f7;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .status-bar {
+            background: #fff;
+            height: 47px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            font-size: 17px;
+            font-weight: 600;
+            border-bottom: 0.5px solid #e5e5ea;
+        }
+        
+        .content {
+            height: calc(100vh - 47px - 83px);
+            overflow-y: auto;
+            background: #f2f2f7;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-bottom: 0.5px solid #e5e5ea;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .back-btn {
+            font-size: 20px;
+            color: #667eea;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+        
+        .settings-section {
+            margin: 20px;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1d1d1f;
+            padding: 20px 20px 10px;
+            background: #f8f9fa;
+        }
+        
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 0.5px solid #e5e5ea;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+        
+        .settings-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .settings-label {
+            font-size: 16px;
+            color: #1d1d1f;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .settings-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+        }
+        
+        .settings-value {
+            font-size: 16px;
+            color: #8e8e93;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .switch {
+            position: relative;
+            width: 51px;
+            height: 31px;
+            background: #e5e5ea;
+            border-radius: 15.5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .switch.active {
+            background: #34c759;
+        }
+        
+        .switch-handle {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 27px;
+            height: 27px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        .switch.active .switch-handle {
+            transform: translateX(20px);
+        }
+        
+        .avatar-section {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            margin: 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+        }
+        
+        .user-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 5px;
+        }
+        
+        .user-email {
+            font-size: 16px;
+            color: #8e8e93;
+        }
+        
+        .slider-container {
+            padding: 20px;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 4px;
+            background: #e5e5ea;
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #8e8e93;
+            margin-top: 10px;
+        }
+        
+        .version-info {
+            text-align: center;
+            padding: 20px;
+            color: #8e8e93;
+            font-size: 14px;
+        }
+        
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid #e5e5ea;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 30px;
+        }
+        
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8e8e93;
+            text-decoration: none;
+            font-size: 10px;
+        }
+        
+        .tab-item.active {
+            color: #667eea;
+        }
+        
+        .tab-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .radio-item {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e5e5ea;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .radio-item.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+
+    
+    <div class="content">
+        <div class="header">
+            <div class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="header-title">设置</div>
+        </div>
+        
+        <div class="avatar-section">
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="user-name">小明</div>
+            <div class="user-email">xiaoming@example.com</div>
+        </div>
+        
+        <div class="settings-section">
+            <div class="section-title">账户设置</div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-user-edit"></i></div>
+                    修改头像
+                </div>
+                <div class="settings-value">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-user"></i></div>
+                    修改昵称
+                </div>
+                <div class="settings-value">
+                    小明 <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-envelope"></i></div>
+                    邮箱地址
+                </div>
+                <div class="settings-value">
+                    xiaoming@example.com <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <div class="section-title">学习计划</div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-graduation-cap"></i></div>
+                    学习目标
+                </div>
+                <div class="settings-value">
+                    考研 <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-calendar-alt"></i></div>
+                    考试时间
+                </div>
+                <div class="settings-value">
+                    2024年12月 <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-clock"></i></div>
+                    每日学习时间
+                </div>
+                <div class="settings-value">
+                    8小时 <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <div class="section-title">通知设置</div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-bell"></i></div>
+                    任务提醒
+                </div>
+                <div class="switch active">
+                    <div class="switch-handle"></div>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-volume-up"></i></div>
+                    声音提醒
+                </div>
+                <div class="switch active">
+                    <div class="switch-handle"></div>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-vibration"></i></div>
+                    振动提醒
+                </div>
+                <div class="switch">
+                    <div class="switch-handle"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <div class="section-title">AI助手</div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-robot"></i></div>
+                    AI对话风格
+                </div>
+                <div class="settings-value">
+                    鼓励型 <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-brain"></i></div>
+                    智能调整
+                </div>
+                <div class="switch active">
+                    <div class="switch-handle"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <div class="section-title">学习偏好</div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-moon"></i></div>
+                    深色模式
+                </div>
+                <div class="switch">
+                    <div class="switch-handle"></div>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-language"></i></div>
+                    语言
+                </div>
+                <div class="settings-value">
+                    简体中文 <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <div class="section-title">数据与隐私</div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    数据备份
+                </div>
+                <div class="settings-value">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-download"></i></div>
+                    数据导出
+                </div>
+                <div class="settings-value">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-shield-alt"></i></div>
+                    隐私政策
+                </div>
+                <div class="settings-value">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <div class="section-title">关于</div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-info-circle"></i></div>
+                    版本信息
+                </div>
+                <div class="settings-value">
+                    v1.2.0 <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-star"></i></div>
+                    评分应用
+                </div>
+                <div class="settings-value">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">
+                    <div class="settings-icon"><i class="fas fa-envelope"></i></div>
+                    联系我们
+                </div>
+                <div class="settings-value">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="version-info">
+            AI Secretary v1.2.0<br>
+            让学习更高效，让成长更简单
+        </div>
+    </div>
+    
+    <div class="tab-bar">
+        <a href="home.html" class="tab-item">
+            <i class="tab-icon fas fa-home"></i>
+            <span>首页</span>
+        </a>
+        <a href="calendar.html" class="tab-item">
+            <i class="tab-icon fas fa-calendar"></i>
+            <span>日历</span>
+        </a>
+        <a href="ai-secretary.html" class="tab-item">
+            <i class="tab-icon fas fa-robot"></i>
+            <span>AI助手</span>
+        </a>
+        <a href="stats.html" class="tab-item">
+            <i class="tab-icon fas fa-chart-bar"></i>
+            <span>统计</span>
+        </a>
+        <a href="settings.html" class="tab-item active">
+            <i class="tab-icon fas fa-cog"></i>
+            <span>设置</span>
+        </a>
+    </div>
+</body>
+</html>

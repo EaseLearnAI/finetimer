@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=430, initial-scale=1.0, user-scalable=no">
+    <title>AI Secretary - 任务详情</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', sans-serif;
+            background: #f2f2f7;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .status-bar {
+            background: #fff;
+            height: 47px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            font-size: 17px;
+            font-weight: 600;
+            border-bottom: 0.5px solid #e5e5ea;
+        }
+        
+        .content {
+            height: calc(100vh - 47px);
+            overflow-y: auto;
+            background: #f2f2f7;
+        }
+        
+        .task-header {
+            background: white;
+            padding: 20px;
+            border-bottom: 0.5px solid #e5e5ea;
+        }
+        
+        .back-btn {
+            font-size: 20px;
+            color: #667eea;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        
+        .task-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 10px;
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .task-tag {
+            background: #f2f2f7;
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .task-time {
+            font-size: 16px;
+            color: #8e8e93;
+        }
+        
+        .task-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 6px;
+            background: #34c759;
+        }
+        
+        .status-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: #34c759;
+        }
+        
+        .task-section {
+            background: white;
+            margin: 20px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 15px;
+        }
+        
+        .task-description {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #3a3a3c;
+            margin-bottom: 15px;
+        }
+        
+        .subtasks {
+            margin-top: 15px;
+        }
+        
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 0.5px solid #e5e5ea;
+        }
+        
+        .subtask-item:last-child {
+            border-bottom: none;
+        }
+        
+        .subtask-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            margin-right: 15px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .subtask-checkbox.checked {
+            background: #667eea;
+        }
+        
+        .subtask-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+        }
+        
+        .subtask-content {
+            flex: 1;
+        }
+        
+        .subtask-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1d1d1f;
+        }
+        
+        .subtask-duration {
+            font-size: 14px;
+            color: #8e8e93;
+            margin-top: 2px;
+        }
+        
+        .timer-section {
+            background: white;
+            margin: 20px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .timer-display {
+            font-size: 48px;
+            font-weight: 700;
+            font-family: 'SF Mono', monospace;
+            color: #1d1d1f;
+            margin: 20px 0;
+        }
+        
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .timer-btn {
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        
+        .timer-btn.start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .timer-btn.pause {
+            background: #ff9500;
+            color: white;
+        }
+        
+        .timer-btn.reset {
+            background: #f2f2f7;
+            color: #1d1d1f;
+        }
+        
+        .timer-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .notes-section {
+            background: white;
+            margin: 20px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .notes-input {
+            width: 100%;
+            min-height: 100px;
+            border: 1px solid #e5e5ea;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+        }
+        
+        .notes-input:focus {
+            border-color: #667eea;
+        }
+        
+        .action-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 20px;
+            border-top: 0.5px solid #e5e5ea;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-align: center;
+        }
+        
+        .action-btn.complete {
+            background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+            color: white;
+        }
+        
+        .action-btn.edit {
+            background: #f2f2f7;
+            color: #1d1d1f;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    
+    <div class="content">
+        <div class="task-header">
+            <div class="back-btn">
+                <i class="fas fa-arrow-left"></i> 返回
+            </div>
+            <div class="task-title">考研英语晨读计划</div>
+            <div class="task-meta">
+                <span class="task-tag">英语学习</span>
+                <span class="task-time">7:30 - 8:00</span>
+            </div>
+            <div class="task-status">
+                <div class="status-indicator"></div>
+                <div class="status-text">进行中</div>
+            </div>
+        </div>
+        
+        <div class="task-section">
+            <div class="section-title">任务描述</div>
+            <div class="task-description">
+                通过晨读提升英语语感和词汇量，重点记忆高频考研词汇，培养英语思维习惯。每天坚持30分钟，积少成多。
+            </div>
+        </div>
+        
+        <div class="task-section">
+            <div class="section-title">今日子任务</div>
+            <div class="subtasks">
+                <div class="subtask-item">
+                    <div class="subtask-checkbox"></div>
+                    <div class="subtask-content">
+                        <div class="subtask-title">背诵高频词汇50个</div>
+                        <div class="subtask-duration">预计15分钟</div>
+                    </div>
+                </div>
+                
+                <div class="subtask-item">
+                    <div class="subtask-checkbox"></div>
+                    <div class="subtask-content">
+                        <div class="subtask-title">阅读英语文章1篇</div>
+                        <div class="subtask-duration">预计10分钟</div>
+                    </div>
+                </div>
+                
+                <div class="subtask-item">
+                    <div class="subtask-checkbox"></div>
+                    <div class="subtask-content">
+                        <div class="subtask-title">跟读练习10分钟</div>
+                        <div class="subtask-duration">预计10分钟</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timer-section">
+            <div class="section-title">番茄钟</div>
+            <div class="timer-display">25:00</div>
+            <div class="timer-controls">
+                <button class="timer-btn start">开始</button>
+                <button class="timer-btn pause" style="display: none;">暂停</button>
+                <button class="timer-btn reset">重置</button>
+            </div>
+        </div>
+        
+        <div class="notes-section">
+            <div class="section-title">学习笔记</div>
+            <textarea class="notes-input" placeholder="记录今天的学习心得..."></textarea>
+        </div>
+    </div>
+    
+    <div class="action-buttons">
+        <button class="action-btn edit">编辑任务</button>
+        <button class="action-btn complete">完成任务</button>
+    </div>
+</body>
+</html>

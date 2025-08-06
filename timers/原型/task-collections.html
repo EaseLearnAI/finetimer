@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=430, initial-scale=1.0, user-scalable=no">
+    <title>任务集 - 任务合集管理</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fe;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .collections-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            display: none;
+        }
+        
+        .header {
+            background: #fff;
+            padding: 16px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .header-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .create-collection-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #4a90e2, #007aff);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+        }
+        
+        .create-collection-btn:hover {
+            transform: translateY(-2px) scale(1.1);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+        }
+        
+        .header-subtitle {
+            font-size: 16px;
+            color: #8e8e93;
+        }
+        
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 16px;
+        }
+        
+        .collection-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.04), 0 10px 24px rgba(60, 90, 130, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .collection-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.06), 0 20px 40px rgba(60, 90, 130, 0.12);
+        }
+        
+        .collection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .collection-info {
+            flex: 1;
+        }
+        
+        .collection-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 6px;
+        }
+        
+        .collection-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .collection-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .progress-bar {
+            width: 60px;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a90e2, #007aff);
+            border-radius: 2px;
+            transition: width 0.4s ease-in-out;
+        }
+        
+        .expand-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #007aff;
+        }
+        
+        .add-subtask-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #4a90e2, #007aff);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+            margin-left: 8px;
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+        }
+        
+        .add-subtask-btn:hover {
+            transform: translateY(-1px) scale(1.1);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+        }
+        
+        .collection-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .expand-btn:hover {
+            background: #f8f9fe;
+            transform: scale(1.1);
+        }
+        
+        .expand-btn.expanded {
+            transform: rotate(180deg);
+        }
+        
+        .subtasks {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+        }
+        
+        .subtasks.expanded {
+            max-height: 500px;
+        }
+        
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 0;
+            border-bottom: 0.5px solid #f2f2f7;
+        }
+        
+        .subtask-item:last-child {
+            border-bottom: none;
+        }
+        
+        .subtask-checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 11px;
+            border: 2px solid #007aff;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+        }
+        
+        .subtask-checkbox.completed {
+            background: linear-gradient(135deg, #4a90e2, #007aff);
+            border-color: transparent;
+            transform: scale(1.1);
+        }
+        
+        .subtask-checkbox:hover {
+            transform: scale(1.05);
+        }
+        
+        .subtask-content {
+            flex: 1;
+        }
+        
+        .subtask-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1d1d1f;
+            margin-bottom: 2px;
+        }
+        
+        .subtask-time {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .subtask-priority {
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            flex-shrink: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .priority-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .priority-medium {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .priority-low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .add-collection-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #4a90e2, #007aff);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            font-size: 24px;
+        }
+        
+        .add-collection-btn:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.5);
+        }
+        
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 83px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(30px);
+            border-top: 0.5px solid #e5e5ea;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 8px;
+        }
+        
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            color: #8e8e93;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .tab-item.active {
+            color: #007aff;
+        }
+        
+        .tab-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            width: 90%;
+            max-width: 320px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        
+        .modal-input:focus {
+            outline: none;
+            border-color: #007aff;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .modal-btn.cancel {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .modal-btn.cancel:hover {
+            background: #e5e7eb;
+        }
+        
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, #4a90e2, #007aff);
+            color: white;
+        }
+        
+        .modal-btn.confirm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #8e8e93;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #d1d1d6;
+        }
+        
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+        }
+        
+        .empty-subtitle {
+            font-size: 14px;
+            color: #8e8e93;
+        }
+    </style>
+</head>
+<body>
+    <div class="collections-container">
+        
+        <div class="header">
+            <div class="header-title">任务集</div>
+            <button class="create-collection-btn" onclick="createCollection()" title="创建新任务集">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+        
+        <!-- 创建任务集弹窗 -->
+        <div class="modal" id="createCollectionModal">
+            <div class="modal-content">
+                <div class="modal-header">创建新任务集</div>
+                <input type="text" class="modal-input" id="collectionNameInput" placeholder="请输入任务集名称" maxlength="20">
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="closeCreateCollectionModal()">取消</button>
+                    <button class="modal-btn confirm" onclick="confirmCreateCollection()">创建</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="collection-card">
+                <div class="collection-header" onclick="toggleCollection(this)">
+                    <div class="collection-info">
+                        <div class="collection-name">考研英语复习</div>
+                        <div class="collection-meta">
+                            <span>5个子任务</span>
+                            <div class="collection-progress">
+                                <span>60%</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 60%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collection-actions">
+                        <button class="add-subtask-btn" onclick="addSubtask(event, this)" title="添加子任务">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="expand-btn">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="subtasks">
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox completed">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">英语单词背诵</div>
+                            <div class="subtask-time">每天 30 分钟</div>
+                        </div>
+                        <div class="subtask-priority priority-high">高</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox completed">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">阅读理解训练</div>
+                            <div class="subtask-time">每周 3 次</div>
+                        </div>
+                        <div class="subtask-priority priority-high">高</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox"></div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">英语作文练习</div>
+                            <div class="subtask-time">每周 2 次</div>
+                        </div>
+                        <div class="subtask-priority priority-medium">中</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox"></div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">英语真题解析</div>
+                            <div class="subtask-time">每周 1 次</div>
+                        </div>
+                        <div class="subtask-priority priority-medium">中</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox"></div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">英语语法复习</div>
+                            <div class="subtask-time">每周 2 次</div>
+                        </div>
+                        <div class="subtask-priority priority-low">低</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="collection-card">
+                <div class="collection-header" onclick="toggleCollection(this)">
+                    <div class="collection-info">
+                        <div class="collection-name">高等数学复习</div>
+                        <div class="collection-meta">
+                            <span>4个子任务</span>
+                            <div class="collection-progress">
+                                <span>75%</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collection-actions">
+                        <button class="add-subtask-btn" onclick="addSubtask(event, this)" title="添加子任务">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="expand-btn">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="subtasks">
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox completed">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">极限与连续复习</div>
+                            <div class="subtask-time">2 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-high">高</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox completed">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">导数与微分</div>
+                            <div class="subtask-time">3 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-high">高</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox completed">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">积分计算</div>
+                            <div class="subtask-time">4 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-medium">中</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox"></div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">微分方程</div>
+                            <div class="subtask-time">3 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-medium">中</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="collection-card">
+                <div class="collection-header" onclick="toggleCollection(this)">
+                    <div class="collection-info">
+                        <div class="collection-name">政治理论复习</div>
+                        <div class="collection-meta">
+                            <span>3个子任务</span>
+                            <div class="collection-progress">
+                                <span>33%</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 33%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collection-actions">
+                        <button class="add-subtask-btn" onclick="addSubtask(event, this)" title="添加子任务">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="expand-btn">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="subtasks">
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox completed">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">马克思主义基本原理</div>
+                            <div class="subtask-time">4 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-high">高</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox"></div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">毛泽东思想和中国特色社会主义</div>
+                            <div class="subtask-time">5 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-high">高</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox"></div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">时事政治热点</div>
+                            <div class="subtask-time">2 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-low">低</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="collection-card">
+                <div class="collection-header" onclick="toggleCollection(this)">
+                    <div class="collection-info">
+                        <div class="collection-name">专业课复习</div>
+                        <div class="collection-meta">
+                            <span>6个子任务</span>
+                            <div class="collection-progress">
+                                <span>50%</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 50%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collection-actions">
+                        <button class="add-subtask-btn" onclick="addSubtask(event, this)" title="添加子任务">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="expand-btn">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="subtasks">
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox completed">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">第一章 绪论</div>
+                            <div class="subtask-time">2 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-medium">中</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox completed">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">第二章 基础理论</div>
+                            <div class="subtask-time">3 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-high">高</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox completed">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">第三章 核心概念</div>
+                            <div class="subtask-time">4 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-high">高</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox"></div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">第四章 应用案例</div>
+                            <div class="subtask-time">3 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-medium">中</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox"></div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">第五章 前沿发展</div>
+                            <div class="subtask-time">2 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-low">低</div>
+                    </div>
+                    
+                    <div class="subtask-item">
+                        <div class="subtask-checkbox"></div>
+                        <div class="subtask-content">
+                            <div class="subtask-name">历年真题分析</div>
+                            <div class="subtask-time">4 小时</div>
+                        </div>
+                        <div class="subtask-priority priority-high">高</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="add-collection-btn">
+            <i class="fas fa-plus"></i>
+        </button>
+        
+        <div class="tab-bar">
+            <a href="home.html" class="tab-item">
+                <i class="tab-icon fas fa-home"></i>
+                <span>首页</span>
+            </a>
+            <a href="calendar.html" class="tab-item">
+                <i class="tab-icon fas fa-calendar"></i>
+                <span>日历</span>
+            </a>
+            <a href="ai-secretary.html" class="tab-item">
+                <i class="tab-icon fas fa-robot"></i>
+                <span>AI助手</span>
+            </a>
+            <a href="task-collections.html" class="tab-item active">
+                <i class="tab-icon fas fa-layer-group"></i>
+                <span>任务集</span>
+            </a>
+            <a href="settings.html" class="tab-item">
+                <i class="tab-icon fas fa-cog"></i>
+                <span>设置</span>
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        function toggleCollection(header) {
+            const collectionCard = header.closest('.collection-card');
+            const subtasks = collectionCard.querySelector('.subtasks');
+            const expandBtn = header.querySelector('.expand-btn');
+            
+            const isExpanded = subtasks.classList.contains('expanded');
+            
+            if (isExpanded) {
+                subtasks.classList.remove('expanded');
+                expandBtn.classList.remove('expanded');
+                subtasks.style.maxHeight = '0px';
+            } else {
+                subtasks.classList.add('expanded');
+                expandBtn.classList.add('expanded');
+                subtasks.style.maxHeight = subtasks.scrollHeight + 'px';
+            }
+        }
+        
+        function createCollection() {
+            const modal = document.getElementById('createCollectionModal');
+            const input = document.getElementById('collectionNameInput');
+            
+            modal.classList.add('show');
+            input.value = '';
+            input.focus();
+            
+            // 点击模态框外部关闭
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    closeCreateCollectionModal();
+                }
+            };
+            
+            // 按ESC键关闭
+            document.onkeydown = function(e) {
+                if (e.key === 'Escape') {
+                    closeCreateCollectionModal();
+                }
+            };
+        }
+        
+        function closeCreateCollectionModal() {
+            const modal = document.getElementById('createCollectionModal');
+            modal.classList.remove('show');
+            document.onkeydown = null;
+        }
+        
+        function confirmCreateCollection() {
+            const input = document.getElementById('collectionNameInput');
+            const collectionName = input.value.trim();
+            
+            if (!collectionName) {
+                alert('请输入任务集名称');
+                input.focus();
+                return;
+            }
+            
+            // 创建新的任务集卡片
+            const newCollection = createCollectionCard(collectionName);
+            
+            // 添加到内容区域
+            const content = document.querySelector('.content');
+            content.appendChild(newCollection);
+            
+            // 关闭弹窗
+            closeCreateCollectionModal();
+        }
+        
+        function createCollectionCard(name) {
+            const card = document.createElement('div');
+            card.className = 'collection-card';
+            
+            card.innerHTML = `
+                <div class="collection-header" onclick="toggleCollection(this)">
+                    <div class="collection-info">
+                        <div class="collection-name">${name}</div>
+                        <div class="collection-meta">
+                            <span>0个子任务</span>
+                            <div class="collection-progress">
+                                <span>0%</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collection-actions">
+                        <button class="add-subtask-btn" onclick="addSubtask(event, this)" title="添加子任务">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="expand-btn">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="subtasks">
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <div class="empty-title">暂无子任务</div>
+                        <div class="empty-subtitle">点击上方 + 按钮添加第一个子任务</div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // 子任务完成切换
+        document.querySelectorAll('.subtask-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('completed');
+                
+                if (this.classList.contains('completed')) {
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                } else {
+                    this.innerHTML = '';
+                }
+                
+                // 更新进度
+                updateCollectionProgress(this.closest('.collection-card'));
+            });
+        });
+        
+        function updateCollectionProgress(collectionCard) {
+            const checkboxes = collectionCard.querySelectorAll('.subtask-checkbox');
+            const completed = collectionCard.querySelectorAll('.subtask-checkbox.completed');
+            const progress = Math.round((completed.length / checkboxes.length) * 100);
+            
+            const progressFill = collectionCard.querySelector('.progress-fill');
+            const progressText = collectionCard.querySelector('.collection-progress span');
+            
+            progressFill.style.width = progress + '%';
+            progressText.textContent = progress + '%';
+        }
+        
+        function createCollection() {
+            const collectionName = prompt('请输入任务集名称：');
+            if (collectionName && collectionName.trim()) {
+                const content = document.querySelector('.content');
+                const newCollection = createCollectionHTML(collectionName.trim());
+                content.insertBefore(newCollection, content.firstChild);
+                
+                // 添加事件监听
+                const newCollectionCard = content.querySelector('.collection-card:first-child');
+                setupCollectionEvents(newCollectionCard);
+            }
+        }
+        
+        function addSubtask(event, button) {
+            event.stopPropagation();
+            
+            const collection = button.closest('.collection-card');
+            const collectionName = collection.querySelector('.collection-name').textContent;
+            const subtaskName = prompt(`为「${collectionName}」添加子任务：`);
+            
+            if (subtaskName && subtaskName.trim()) {
+                const subtasks = collection.querySelector('.subtasks');
+                const newSubtask = createSubtaskHTML(subtaskName.trim());
+                subtasks.appendChild(newSubtask);
+                
+                // 确保展开状态
+                const subtasksDiv = collection.querySelector('.subtasks');
+                const expandBtn = collection.querySelector('.expand-btn');
+                if (!subtasksDiv.classList.contains('expanded')) {
+                    subtasksDiv.classList.add('expanded');
+                    expandBtn.classList.add('expanded');
+                }
+                
+                // 更新子任务计数和进度
+                updateCollectionStats(collection);
+                setupSubtaskEvents(newSubtask);
+            }
+        }
+        
+        function createCollectionHTML(name) {
+            const div = document.createElement('div');
+            div.className = 'collection-card';
+            div.innerHTML = `
+                <div class="collection-header" onclick="toggleCollection(this)">
+                    <div class="collection-info">
+                        <div class="collection-name">${name}</div>
+                        <div class="collection-meta">
+                            <span>0个子任务</span>
+                            <div class="collection-progress">
+                                <span>0%</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collection-actions">
+                        <button class="add-subtask-btn" onclick="addSubtask(event, this)" title="添加子任务">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="expand-btn">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="subtasks">
+                    <!-- 子任务将在这里动态添加 -->
+                </div>
+            `;
+            return div;
+        }
+        
+        function createSubtaskHTML(name) {
+            const div = document.createElement('div');
+            div.className = 'subtask-item';
+            div.innerHTML = `
+                <div class="subtask-checkbox" onclick="toggleSubtask(this)">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="subtask-content">
+                    <div class="subtask-name">${name}</div>
+                    <div class="subtask-time">待安排</div>
+                </div>
+                <div class="subtask-priority priority-medium">中</div>
+            `;
+            return div;
+        }
+        
+        function updateCollectionStats(collection) {
+            const subtasks = collection.querySelectorAll('.subtask-item');
+            const completedSubtasks = collection.querySelectorAll('.subtask-checkbox.completed');
+            const subtaskCount = collection.querySelector('.collection-meta span');
+            const progressText = collection.querySelector('.collection-progress span');
+            const progressBar = collection.querySelector('.progress-fill');
+            
+            subtaskCount.textContent = `${subtasks.length}个子任务`;
+            const progress = subtasks.length > 0 ? (completedSubtasks.length / subtasks.length) * 100 : 0;
+            progressText.textContent = Math.round(progress) + '%';
+            progressBar.style.width = progress + '%';
+        }
+        
+        function setupCollectionEvents(collection) {
+            const expandBtn = collection.querySelector('.expand-btn');
+            const addSubtaskBtn = collection.querySelector('.add-subtask-btn');
+            
+            expandBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleCollection(this.parentElement);
+            });
+            
+            addSubtaskBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                addSubtask(e, this);
+            });
+        }
+        
+        function setupSubtaskEvents(subtask) {
+            const checkbox = subtask.querySelector('.subtask-checkbox');
+            checkbox.addEventListener('click', function() {
+                toggleSubtask(this);
+                const collection = this.closest('.collection-card');
+                updateCollectionStats(collection);
+            });
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('任务集管理页面已加载');
+            
+            // 为所有现有任务集设置事件
+            document.querySelectorAll('.collection-card').forEach(setupCollectionEvents);
+            
+            // 为所有现有子任务设置事件
+            document.querySelectorAll('.subtask-item').forEach(setupSubtaskEvents);
+        });
+    </script>
+</body>
+</html>

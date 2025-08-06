@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI学习助手 - iPhone 16 Pro Max 预览</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .device-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .iphone-container {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            border-radius: 60px;
+            padding: 15px;
+            box-shadow: 
+                0 0 0 2px rgba(255,255,255,0.1),
+                0 20px 50px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .iphone-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 0 0 2px rgba(255,255,255,0.2),
+                0 30px 70px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .iphone-frame {
+            width: 430px;
+            height: 932px;
+            border-radius: 47px;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .iphone-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 47px;
+            border: none;
+            background: #fff;
+        }
+
+        .iphone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 35px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+
+        .app-title {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            backdrop-filter: blur(20px);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .app-icon {
+            display: inline-block;
+            margin-right: 8px;
+            font-size: 20px;
+        }
+
+        .device-label {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            border-radius: 47px;
+            z-index: 5;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .header p {
+                font-size: 16px;
+            }
+
+            .device-showcase {
+                grid-template-columns: 1fr;
+                gap: 60px;
+                padding: 0 10px;
+            }
+
+            .iphone-container {
+                margin: 0 auto;
+            }
+
+            .iphone-frame {
+                width: 375px;
+                height: 812px;
+                border-radius: 40px;
+            }
+
+            .iphone-screen {
+                border-radius: 40px;
+            }
+
+            .iphone-notch {
+                width: 140px;
+                height: 30px;
+                border-radius: 0 0 18px 18px;
+            }
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="header">
+        <h1>AI学习助手</h1>
+        <p>iPhone 16 Pro Max 高保真原型预览</p>
+    </div>
+
+    <div class="device-showcase">
+        <div class="iphone-container">
+            <div class="app-title">
+                <span class="app-icon">🏠</span>
+                首页任务中心
+            </div>
+            <div class="iphone-frame">
+                <div class="iphone-notch"></div>
+                <div class="loading-overlay" id="loading-home">
+                    <div>加载中...</div>
+                </div>
+                <iframe class="iphone-screen" src="home.html" onload="hideLoading('home')"></iframe>
+            </div>
+            <div class="device-label">iPhone 16 Pro Max</div>
+        </div>
+
+        <div class="iphone-container">
+            <div class="app-title">
+                <span class="app-icon">📅</span>
+                日历周视图
+            </div>
+            <div class="iphone-frame">
+                <div class="iphone-notch"></div>
+                <div class="loading-overlay" id="loading-calendar">
+                    <div>加载中...</div>
+                </div>
+                <iframe class="iphone-screen" src="calendar.html" onload="hideLoading('calendar')"></iframe>
+            </div>
+            <div class="device-label">iPhone 16 Pro Max</div>
+        </div>
+
+        <div class="iphone-container">
+            <div class="app-title">
+                <span class="app-icon">🤖</span>
+                AI学习助手
+            </div>
+            <div class="iphone-frame">
+                <div class="iphone-notch"></div>
+                <div class="loading-overlay" id="loading-ai-secretary">
+                    <div>加载中...</div>
+                </div>
+                <iframe class="iphone-screen" src="ai-secretary.html" onload="hideLoading('ai-secretary')"></iframe>
+            </div>
+            <div class="device-label">iPhone 16 Pro Max</div>
+        </div>
+
+        <div class="iphone-container">
+            <div class="app-title">
+                <span class="app-icon">📁</span>
+                任务集管理
+            </div>
+            <div class="iphone-frame">
+                <div class="iphone-notch"></div>
+                <div class="loading-overlay" id="loading-task-collections">
+                    <div>加载中...</div>
+                </div>
+                <iframe class="iphone-screen" src="task-collections.html" onload="hideLoading('task-collections')"></iframe>
+            </div>
+            <div class="device-label">iPhone 16 Pro Max</div>
+        </div>
+
+        <div class="iphone-container">
+            <div class="app-title">
+                <span class="app-icon">🍅</span>
+                番茄钟计时器
+            </div>
+            <div class="iphone-frame">
+                <div class="iphone-notch"></div>
+                <div class="loading-overlay" id="loading-pomodoro">
+                    <div>加载中...</div>
+                </div>
+                <iframe class="iphone-screen" src="pomodoro.html" onload="hideLoading('pomodoro')"></iframe>
+            </div>
+            <div class="device-label">iPhone 16 Pro Max</div>
+        </div>
+
+        <div class="iphone-container">
+            <div class="app-title">
+                <span class="app-icon">📝</span>
+                任务详情
+            </div>
+            <div class="iphone-frame">
+                <div class="iphone-notch"></div>
+                <div class="loading-overlay" id="loading-task-detail">
+                    <div>加载中...</div>
+                </div>
+                <iframe class="iphone-screen" src="备用/task-detail.html" onload="hideLoading('task-detail')"></iframe>
+            </div>
+            <div class="device-label">iPhone 16 Pro Max</div>
+        </div>
+
+        <div class="iphone-container">
+            <div class="app-title">
+                <span class="app-icon">📊</span>
+                数据统计
+            </div>
+            <div class="iphone-frame">
+                <div class="iphone-notch"></div>
+                <div class="loading-overlay" id="loading-stats">
+                    <div>加载中...</div>
+                </div>
+                <iframe class="iphone-screen" src="stats.html" onload="hideLoading('stats')"></iframe>
+            </div>
+            <div class="device-label">iPhone 16 Pro Max</div>
+        </div>
+
+        <div class="iphone-container">
+            <div class="app-title">
+                <span class="app-icon">⚙️</span>
+                设置中心
+            </div>
+            <div class="iphone-frame">
+                <div class="iphone-notch"></div>
+                <div class="loading-overlay" id="loading-settings">
+                    <div>加载中...</div>
+                </div>
+                <iframe class="iphone-screen" src="备用/settings.html" onload="hideLoading('settings')"></iframe>
+            </div>
+            <div class="device-label">iPhone 16 Pro Max</div>
+        </div>
+    </div>
+
+    <script>
+        function hideLoading(app) {
+            const loading = document.getElementById(`loading-${app}`);
+            if (loading) {
+                loading.classList.add('hidden');
+            }
+        }
+
+        // 创建浮动粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 20 + 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            console.log('AI学习助手 - iPhone 16 Pro Max 原型预览已启动');
+            console.log('包含8个核心界面，完美适配iPhone 16 Pro Max规格');
+        });
+
+        // 添加键盘导航支持
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                const iframes = document.querySelectorAll('.iphone-screen');
+                // 可以在这里添加键盘导航逻辑
+            }
+        });
+    </script>
+</body>
+</html>

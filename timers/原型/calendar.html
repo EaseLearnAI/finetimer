@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=430, initial-scale=1.0, user-scalable=no">
+    <title>日历中心 - 周视图</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', sans-serif;
+            background: #f2f2f7;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .calendar-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #fff;
+            padding: 20px 30px;
+            border-bottom: 0.5px solid #e5e5ea;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+            background: #f2f2f7;
+            border-radius: 20px;
+            padding: 4px;
+        }
+        
+        .toggle-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #8e8e93;
+        }
+        
+        .toggle-btn.active {
+            background: #007aff;
+            color: white;
+        }
+        
+        .week-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .week-day {
+            font-size: 12px;
+            font-weight: 600;
+            color: #8e8e93;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .week-dates {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+        
+        .date-cell {
+            padding: 12px 0;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .date-number {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+        
+        .date-cell.today {
+            background: #007aff;
+        }
+        
+        .date-cell.today .date-number {
+            color: white;
+        }
+        
+        .date-cell.selected {
+            background: rgba(0, 122, 255, 0.1);
+            border: 2px solid #007aff;
+        }
+        
+        .task-indicator {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 2px;
+            background: #ff3b30;
+        }
+        
+        .task-indicator.multiple {
+            width: 12px;
+            background: linear-gradient(90deg, #ff3b30 0%, #ff9500 50%, #34c759 100%);
+        }
+        
+        .week-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            margin-bottom: 20px;
+        }
+        
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            background: #f2f2f7;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #007aff;
+        }
+        
+        .nav-btn:hover {
+            background: #e5e5ea;
+        }
+        
+        .week-range {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+        
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 30px;
+        }
+        
+        .day-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f2f2f7;
+        }
+        
+        .day-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+        
+        .day-date {
+            font-size: 14px;
+            color: #8e8e93;
+        }
+        
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .task-item:hover {
+            background: #f2f2f7;
+            transform: translateY(-1px);
+        }
+        
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            border: 2px solid #007aff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .task-checkbox.completed {
+            background: #007aff;
+        }
+        
+        .task-content {
+            flex: 1;
+        }
+        
+        .task-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1d1d1f;
+            margin-bottom: 4px;
+        }
+        
+        .task-time {
+            font-size: 14px;
+            color: #8e8e93;
+        }
+        
+        .task-priority {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .priority-high {
+            background: #ff3b30;
+            color: white;
+        }
+        
+        .priority-medium {
+            background: #ff9500;
+            color: white;
+        }
+        
+        .priority-low {
+            background: #34c759;
+            color: white;
+        }
+        
+        .add-task-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            background: #007aff;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+        
+        .add-task-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+        }
+        
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 83px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid #e5e5ea;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 8px;
+        }
+        
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            color: #8e8e93;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .tab-item.active {
+            color: #007aff;
+        }
+        
+        .tab-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .month-view {
+            display: none;
+            padding: 20px 30px;
+        }
+        
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        
+        .month-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .month-day:hover {
+            background: #f2f2f7;
+        }
+        
+        .month-day.other-month {
+            opacity: 0.3;
+        }
+        
+        .month-day.today {
+            background: #007aff;
+            color: white;
+        }
+        
+        .month-day.selected {
+            background: rgba(0, 122, 255, 0.1);
+            border: 2px solid #007aff;
+        }
+    </style>
+</head>
+<body>
+    <div class="calendar-container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-title">日历中心</div>
+                <div class="view-toggle">
+                    <button class="toggle-btn active" data-view="week">周视图</button>
+                    <button class="toggle-btn" data-view="month">月视图</button>
+                </div>
+            </div>
+            
+            <div class="week-nav">
+                <button class="nav-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="week-range">12月16日 - 12月22日</div>
+                <button class="nav-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <div class="week-header">
+                <div class="week-day">周一</div>
+                <div class="week-day">周二</div>
+                <div class="week-day">周三</div>
+                <div class="week-day">周四</div>
+                <div class="week-day">周五</div>
+                <div class="week-day">周六</div>
+                <div class="week-day">周日</div>
+            </div>
+            
+            <div class="week-dates">
+                <div class="date-cell">
+                    <div class="date-number">16</div>
+                    <div class="task-indicator"></div>
+                </div>
+                <div class="date-cell selected">
+                    <div class="date-number">17</div>
+                    <div class="task-indicator multiple"></div>
+                </div>
+                <div class="date-cell">
+                    <div class="date-number">18</div>
+                    <div class="task-indicator"></div>
+                </div>
+                <div class="date-cell today">
+                    <div class="date-number">19</div>
+                    <div class="task-indicator"></div>
+                </div>
+                <div class="date-cell">
+                    <div class="date-number">20</div>
+                    <div class="task-indicator"></div>
+                </div>
+                <div class="date-cell">
+                    <div class="date-number">21</div>
+                </div>
+                <div class="date-cell">
+                    <div class="date-number">22</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="day-section">
+                <div class="day-header">
+                    <div class="day-title">今天</div>
+                    <div class="day-date">12月19日 周四</div>
+                </div>
+                
+                <div class="task-list">
+                    <div class="task-item">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-name">考研英语阅读训练</div>
+                            <div class="task-time">09:00 - 10:30</div>
+                        </div>
+                        <div class="task-priority priority-high">高</div>
+                    </div>
+                    
+                    <div class="task-item">
+                        <div class="task-checkbox completed">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="task-content">
+                            <div class="task-name">高数第三章复习</div>
+                            <div class="task-time">14:00 - 16:00</div>
+                        </div>
+                        <div class="task-priority priority-medium">中</div>
+                    </div>
+                    
+                    <div class="task-item">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-name">政治选择题练习</div>
+                            <div class="task-time">19:30 - 21:00</div>
+                        </div>
+                        <div class="task-priority priority-low">低</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="day-section">
+                <div class="day-header">
+                    <div class="day-title">明天</div>
+                    <div class="day-date">12月20日 周五</div>
+                </div>
+                
+                <div class="task-list">
+                    <div class="task-item">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-name">英语单词背诵</div>
+                            <div class="task-time">08:00 - 09:00</div>
+                        </div>
+                        <div class="task-priority priority-high">高</div>
+                    </div>
+                    
+                    <div class="task-item">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-name">数学真题训练</div>
+                            <div class="task-time">10:00 - 12:00</div>
+                        </div>
+                        <div class="task-priority priority-medium">中</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="month-view">
+            <div class="month-grid">
+                <div class="month-day other-month">
+                    <div class="date-number">25</div>
+                </div>
+                <div class="month-day other-month">
+                    <div class="date-number">26</div>
+                </div>
+                <div class="month-day other-month">
+                    <div class="date-number">27</div>
+                </div>
+                <div class="month-day other-month">
+                    <div class="date-number">28</div>
+                </div>
+                <div class="month-day other-month">
+                    <div class="date-number">29</div>
+                </div>
+                <div class="month-day other-month">
+                    <div class="date-number">30</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">1</div>
+                    <div class="task-indicator"></div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">2</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">3</div>
+                    <div class="task-indicator"></div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">4</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">5</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">6</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">7</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">8</div>
+                </div>
+                <div class="month-day today">
+                    <div class="date-number">19</div>
+                    <div class="task-indicator multiple"></div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">20</div>
+                    <div class="task-indicator"></div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">21</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">22</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">23</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">24</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">25</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">26</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">27</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">28</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">29</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">30</div>
+                </div>
+                <div class="month-day">
+                    <div class="date-number">31</div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="add-task-btn">
+            <i class="fas fa-plus"></i>
+        </button>
+        
+        <div class="tab-bar">
+            <a href="home.html" class="tab-item">
+                <i class="tab-icon fas fa-home"></i>
+                <span>首页</span>
+            </a>
+            <a href="calendar.html" class="tab-item active">
+                <i class="tab-icon fas fa-calendar"></i>
+                <span>日历</span>
+            </a>
+            <a href="ai-secretary.html" class="tab-item">
+                <i class="tab-icon fas fa-robot"></i>
+                <span>AI助手</span>
+            </a>
+            <a href="task-collections.html" class="tab-item">
+                <i class="tab-icon fas fa-layer-group"></i>
+                <span>任务集</span>
+            </a>
+            <a href="settings.html" class="tab-item">
+                <i class="tab-icon fas fa-cog"></i>
+                <span>设置</span>
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // 视图切换功能
+        const toggleBtns = document.querySelectorAll('.toggle-btn');
+        const weekView = document.querySelector('.content');
+        const monthView = document.querySelector('.month-view');
+
+        toggleBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                toggleBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const view = this.dataset.view;
+                if (view === 'week') {
+                    weekView.style.display = 'block';
+                    monthView.style.display = 'none';
+                } else {
+                    weekView.style.display = 'none';
+                    monthView.style.display = 'block';
+                }
+            });
+        });
+
+        // 日期选择功能
+        const dateCells = document.querySelectorAll('.date-cell');
+        dateCells.forEach(cell => {
+            cell.addEventListener('click', function() {
+                dateCells.forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // 任务完成状态切换
+        const taskCheckboxes = document.querySelectorAll('.task-checkbox');
+        taskCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('click', function() {
+                this.classList.toggle('completed');
+                if (this.classList.contains('completed')) {
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                } else {
+                    this.innerHTML = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

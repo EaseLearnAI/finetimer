@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=430, initial-scale=1.0, user-scalable=no">
+    <title>AI Secretary - 任务中心</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', sans-serif;
+            background: #f2f2f7;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .status-bar {
+            background: #fff;
+            height: 47px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            font-size: 17px;
+            font-weight: 600;
+            border-bottom: 0.5px solid #e5e5ea;
+        }
+        
+        .header {
+            background: #fff;
+            padding: 12px 20px;
+            border-bottom: 0.5px solid #e5e5ea;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        
+        .settings-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+            background: #f2f2f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .settings-btn:hover {
+            background: #e5e5ea;
+        }
+        
+        .view-toggle {
+            display: flex;
+            background: #f2f2f7;
+            border-radius: 20px;
+            padding: 4px;
+            margin: 0 auto;
+            width: 200px;
+        }
+        
+        .toggle-btn {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #8e8e93;
+        }
+        
+        .toggle-btn.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .content {
+            height: calc(100vh - 47px - 56px - 83px);
+            overflow-y: auto;
+            background: #f2f2f7;
+        }
+        
+        .section {
+            margin: 20px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1d1d1f;
+        }
+        
+        /* 四象限视图 */
+        .quadrant-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            height: calc(100vh - 200px);
+        }
+        
+        .quadrant {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .quadrant-header {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e5e5ea;
+        }
+        
+        .quadrant-1 .quadrant-header { color: #ff3b30; }
+        .quadrant-2 .quadrant-header { color: #007aff; }
+        .quadrant-3 .quadrant-header { color: #ff9500; }
+        .quadrant-4 .quadrant-header { color: #34c759; }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .task-item:hover {
+            background: #e5e5ea;
+        }
+        
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            margin-right: 12px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .task-checkbox.checked {
+            background: #667eea;
+        }
+        
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+        }
+        
+        .task-content {
+            flex: 1;
+        }
+        
+        .task-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1d1d1f;
+            margin-bottom: 2px;
+        }
+        
+        .task-time {
+            font-size: 12px;
+            color: #8e8e93;
+        }
+        
+        .task-priority {
+            width: 8px;
+            height: 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+        
+        .priority-high { background: #ff3b30; }
+        .priority-medium { background: #ff9500; }
+        .priority-low { background: #34c759; }
+        
+        /* 时间块视图 */
+        .time-blocks {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .time-block {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .time-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+            transition: left 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .sidebar.open {
+            left: 0;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e5ea;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .close-sidebar {
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+            background: #f2f2f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .sidebar-content {
+            padding: 20px;
+        }
+        
+        .setting-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f2f2f7;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-label {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .setting-description {
+            font-size: 14px;
+            color: #8e8e93;
+        }
+        
+        /* 添加任务弹窗 */
+        .add-task-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .add-task-form {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        
+        .form-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #1d1d1f;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e5ea;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .form-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .form-btn.cancel {
+            background: #f2f2f7;
+            color: #8e8e93;
+        }
+        
+        .form-btn.save {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid #e5e5ea;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 30px;
+        }
+        
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #8e8e93;
+            text-decoration: none;
+            font-size: 10px;
+        }
+        
+        .tab-item.active {
+            color: #667eea;
+        }
+        
+        .tab-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            z-index: 999;
+            display: none;
+        }
+        
+        .add-task-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 100;
+        }
+        
+        .add-task-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+    
+    <div class="header">
+        <div class="settings-btn" onclick="toggleSidebar()">
+            <i class="fas fa-cog"></i>
+        </div>
+        
+        <div class="view-toggle">
+            <button class="toggle-btn active" onclick="switchView('time')">时间块</button>
+            <button class="toggle-btn" onclick="switchView('quadrant')">四象限</button>
+        </div>
+        
+        <div class="settings-btn" onclick="openAddTask()">
+            <i class="fas fa-plus"></i>
+        </div>
+    </div>
+    
+    <div class="content">
+        <div class="section">
+            <div class="section-title">今日任务</div>
+            
+            <!-- 时间块视图 -->
+            <div id="timeView" class="time-blocks">
+                <div class="time-block">
+                    <div class="time-label">早上 7:00 - 9:00</div>
+                    <div class="task-item" onclick="openPomodoro('英语晨读计划')">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-title">英语晨读计划</div>
+                            <div class="task-time">7:30 - 8:00</div>
+                        </div>
+                        <div class="task-priority priority-high"></div>
+                    </div>
+                </div>
+                
+                <div class="time-block">
+                    <div class="time-label">上午 9:00 - 12:00</div>
+                    <div class="task-item" onclick="openPomodoro('考研数学复习')">
+                        <div class="task-checkbox checked"></div>
+                        <div class="task-content">
+                            <div class="task-title">考研数学复习</div>
+                            <div class="task-time">9:00 - 11:00</div>
+                        </div>
+                        <div class="task-priority priority-high"></div>
+                    </div>
+                    <div class="task-item" onclick="openPomodoro('政治知识点背诵')">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-title">政治知识点背诵</div>
+                            <div class="task-time">11:00 - 12:00</div>
+                        </div>
+                        <div class="task-priority priority-medium"></div>
+                    </div>
+                </div>
+                
+                <div class="time-block">
+                    <div class="time-label">下午 14:00 - 18:00</div>
+                    <div class="task-item" onclick="openPomodoro('专业课笔记整理')">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-title">专业课笔记整理</div>
+                            <div class="task-time">14:00 - 16:00</div>
+                        </div>
+                        <div class="task-priority priority-medium"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 四象限视图 -->
+            <div id="quadrantView" class="quadrant-grid" style="display: none;">
+                <div class="quadrant quadrant-1">
+                    <div class="quadrant-header">重要且紧急</div>
+                    <div class="task-item" onclick="openPomodoro('考研数学复习')">
+                        <div class="task-checkbox checked"></div>
+                        <div class="task-content">
+                            <div class="task-title">考研数学复习</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quadrant quadrant-2">
+                    <div class="quadrant-header">重要不紧急</div>
+                    <div class="task-item" onclick="openPomodoro('英语晨读计划')">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-title">英语晨读计划</div>
+                        </div>
+                    </div>
+                    <div class="task-item" onclick="openPomodoro('专业课笔记整理')">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-title">专业课笔记整理</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quadrant quadrant-3">
+                    <div class="quadrant-header">紧急不重要</div>
+                    <div class="task-item" onclick="openPomodoro('政治知识点背诵')">
+                        <div class="task-checkbox"></div>
+                        <div class="task-content">
+                            <div class="task-title">政治知识点背诵</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quadrant quadrant-4">
+                    <div class="quadrant-header">不重要不紧急</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">设置</div>
+            <div class="close-sidebar" onclick="toggleSidebar()">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+        <div class="sidebar-content">
+            <div class="setting-item">
+                <div class="setting-label">通知设置</div>
+                <div class="setting-description">管理任务提醒和推送</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">学习计划</div>
+                <div class="setting-description">调整AI生成的学习计划</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">主题设置</div>
+                <div class="setting-description">切换深色/浅色模式</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">数据同步</div>
+                <div class="setting-description">云端备份和恢复</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加任务弹窗 -->
+    <div class="add-task-modal" id="addTaskModal">
+        <div class="add-task-form">
+            <div class="form-title">添加新任务</div>
+            <div class="form-group">
+                <label class="form-label">任务名称 *</label>
+                <input type="text" class="form-input" placeholder="输入任务名称" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">紧急程度</label>
+                <select class="form-input">
+                    <option value="">请选择</option>
+                    <option value="urgent">紧急</option>
+                    <option value="not-urgent">不紧急</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">任务重要性</label>
+                <select class="form-input">
+                    <option value="">请选择</option>
+                    <option value="important">重要</option>
+                    <option value="not-important">不重要</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">截止时间</label>
+                <input type="time" class="form-input" placeholder="可选">
+            </div>
+            <div class="form-actions">
+                <button class="form-btn cancel" onclick="closeAddTask()">取消</button>
+                <button class="form-btn save">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    
+    <div class="tab-bar">
+        <a href="home.html" class="tab-item active">
+            <i class="tab-icon fas fa-home"></i>
+            <span>首页</span>
+        </a>
+        <a href="task-collections.html" class="tab-item">
+            <i class="tab-icon fas fa-folder"></i>
+            <span>任务集</span>
+        </a>
+        <a href="ai-secretary.html" class="tab-item">
+            <i class="tab-icon fas fa-robot"></i>
+            <span>AI助手</span>
+        </a>
+        <a href="calendar.html" class="tab-item">
+            <i class="tab-icon fas fa-calendar"></i>
+            <span>日历</span>
+        </a>
+        <a href="stats.html" class="tab-item">
+            <i class="tab-icon fas fa-chart-pie"></i>
+            <span>统计</span>
+        </a>
+    </div>
+    
+    <div class="add-task-btn" onclick="window.location.href='ai-secretary.html'">
+        <i class="fas fa-plus"></i>
+    </div>
+    
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('open');
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
+        
+        function switchView(view) {
+            const timeView = document.getElementById('timeView');
+            const quadrantView = document.getElementById('quadrantView');
+            const buttons = document.querySelectorAll('.toggle-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (view === 'time') {
+                timeView.style.display = 'block';
+                quadrantView.style.display = 'none';
+            } else {
+                timeView.style.display = 'none';
+                quadrantView.style.display = 'grid';
+            }
+        }
+        
+        function openAddTask() {
+            document.getElementById('addTaskModal').style.display = 'flex';
+        }
+        
+        function closeAddTask() {
+            document.getElementById('addTaskModal').style.display = 'none';
+        }
+        
+        function openPomodoro(taskName) {
+            window.location.href = `pomodoro.html?task=${encodeURIComponent(taskName)}`;
+        }
+    </script>
+</body>
+</html>
