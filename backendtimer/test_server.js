@@ -4,10 +4,16 @@
 const express = require('express');
 const cors = require('cors');
 
+// 导入数据库连接
+const connectDB = require('./src/config/database');
+
 // 只导入AI路由进行测试
 const aiRoutes = require('./src/AIsiri/routes/ai_routes');
 
 const app = express();
+
+// 连接数据库
+connectDB();
 
 // 应用中间件
 app.use(cors());

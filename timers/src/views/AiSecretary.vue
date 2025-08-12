@@ -2,6 +2,19 @@
   <div class="ai-secretary-container">
     <PageHeader title="AI学习助手" />
     
+    <!-- 连接状态显示 -->
+    <div v-if="connectionStatus === 'connecting'" class="connection-status connecting">
+      <font-awesome-icon icon="spinner" spin />
+      <span>{{ connectionStatusText }}</span>
+    </div>
+    
+    <!-- 错误提示 -->
+    <div v-if="showError" class="error-banner" @click="reconnect">
+      <font-awesome-icon icon="exclamation-circle" />
+      <span>{{ errorMessage }}</span>
+      <small>点击重试</small>
+    </div>
+    
     <div class="chat-container">
       <MessageCard 
         v-for="message in messages" 
@@ -10,7 +23,7 @@
       />
       
       <!-- Typing indicator -->
-      <div v-if="isTyping" class="message ai-message">
+      <div v-if="isProcessing" class="message ai-message">
         <div class="avatar">
           <font-awesome-icon icon="robot" />
         </div>
@@ -39,31 +52,7 @@
     
     <MessageInput @sendMessage="sendMessage" />
     
-    <!-- Suggestions Panel -->
-    <div v-if="showSuggestions" class="suggestions-panel">
-      <div class="suggestions-header">
-        <h3>智能建议</h3>
-        <button @click="showSuggestions = false">
-          <font-awesome-icon icon="times" />
-        </button>
-      </div>
-      <div class="suggestions-content">
-        <div 
-          v-for="suggestion in suggestions"
-          :key="suggestion.id"
-          class="suggestion-item"
-          @click="applySuggestion(suggestion)"
-        >
-          <div class="suggestion-icon">
-            <font-awesome-icon :icon="suggestion.icon" />
-          </div>
-          <div class="suggestion-text">
-            <div class="suggestion-title">{{ suggestion.title }}</div>
-            <div class="suggestion-desc">{{ suggestion.description }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
+
     
 
   </div>
@@ -73,6 +62,12 @@
 import PageHeader from '../components/AIsecretary/PageHeader.vue'
 import MessageCard from '../components/AIsecretary/MessageCard.vue'
 import MessageInput from '../components/AIsecretary/MessageInput.vue'
+
+// 导入AI服务
+import messageService from '../AIsiri/services/messageService.js'
+import aiService from '../AIsiri/services/aiApi.js'
+import { QUICK_ACTIONS } from '../AIsiri/types/index.js'
+import { log } from '../AIsiri/utils/logger.js'
 
 export default {
   name: 'AiSecretary',
@@ -84,113 +79,212 @@ export default {
   data() {
     return {
       isTyping: false,
-      showSuggestions: false,
-      messages: [
-        {
-          id: 1,
-          text: '你好！我是你的AI学习助手。我可以帮助你制定学习计划、调整任务安排，以及根据你的情绪状态优化学习节奏。请告诉我你想要实现什么学习目标？',
-          isUser: false,
-        }
-      ],
-      quickActions: [
-        { id: 1, icon: 'graduation-cap', label: '考研规划', text: '我想制定考研学习计划' },
-        { id: 2, icon: 'code', label: '编程学习', text: '我想学习编程' },
-        { id: 3, icon: 'language', label: '英语提升', text: '我想提升英语水平' },
-        { id: 4, icon: 'chart-line', label: '学习总结', text: '帮我总结最近的学习情况' }
-      ],
-      suggestions: [
-        {
-          id: 1,
-          icon: 'clock',
-          title: '调整学习时间',
-          description: '根据你的作息习惯优化学习时间安排'
-        },
-        {
-          id: 2,
-          icon: 'brain',
-          title: '智能任务分配',
-          description: '基于任务难度和重要性智能安排'
-        },
-        {
-          id: 3,
-          icon: 'heart',
-          title: '情绪调节',
-          description: '根据当前状态调整学习强度'
-        }
-      ],
-      aiResponses: [
-        '我了解了你的需求，让我为你制定一个个性化的学习计划...',
-        '根据你的情况，我建议采用番茄工作法来提高专注度。',
-        '我注意到你可能有些疲惫，要不要先休息一下，或者调整今天的任务量？',
-        '很好！你的学习进度不错。我建议在当前基础上增加一些挑战性任务。',
-        '我为你生成了一个新的学习计划，已经根据你的反馈进行了调整。'
-      ]
+      messages: [],
+      quickActions: QUICK_ACTIONS,
+      messageService: messageService,
+      // 添加连接状态
+      connectionStatus: 'connecting', // connecting, connected, error
+      // 添加错误信息
+      errorMessage: null
     }
   },
   methods: {
-    sendMessage(text) {
-      const userMessage = {
-        id: Date.now(),
-        text: text,
-        isUser: true,
+    /**
+     * 发送消息
+     */
+    async sendMessage(text) {
+      if (!text || !text.trim()) {
+        log.warn('发送消息失败：消息内容为空')
+        return
       }
-      
-      this.messages.push(userMessage)
-      
-      // Simulate AI response
-      this.simulateAIResponse()
-    },
-    sendQuickMessage(text) {
-      this.sendMessage(text)
-    },
-    simulateAIResponse() {
-      this.isTyping = true
-      
-      setTimeout(() => {
+
+      try {
+        log.user('发送消息', { message: text })
+        
+        // 显示打字状态
+        this.isTyping = true
+        
+        // 处理用户输入
+        await this.messageService.processUserInput(text.trim())
+        
+        // 更新消息列表
+        this.updateMessages()
+        
+      } catch (error) {
+        log.error('发送消息失败', error)
+        this.handleError('发送消息时出现错误，请稍后重试')
+      } finally {
         this.isTyping = false
-        
-        const aiMessage = {
-          id: Date.now(),
-          text: this.getRandomAIResponse(),
-          isUser: false,
-        }
-        
-        this.messages.push(aiMessage)
-        
-        // Show suggestions occasionally
-        if (Math.random() > 0.7) {
-          this.showSuggestions = true
-        }
-        
-        // Auto scroll to bottom
         this.$nextTick(() => {
           this.scrollToBottom()
         })
-      }, 1500 + Math.random() * 1000)
-    },
-    getRandomAIResponse() {
-      return this.aiResponses[Math.floor(Math.random() * this.aiResponses.length)]
-    },
-    applySuggestion(suggestion) {
-      const suggestionMessage = {
-        id: Date.now(),
-        text: `请帮我${suggestion.title}：${suggestion.description}`,
-        isUser: true,
       }
+    },
+
+    /**
+     * 发送快速消息
+     */
+    async sendQuickMessage(text) {
+      log.user('使用快速操作', { message: text })
+      await this.sendMessage(text)
+    },
+
+
+
+    /**
+     * 更新消息列表
+     */
+    updateMessages() {
+      this.messages = this.messageService.getMessages()
+      log.debug('消息列表已更新', { messageCount: this.messages.length })
+    },
+
+    /**
+     * 处理错误
+     */
+    handleError(message) {
+      this.errorMessage = message
+      this.connectionStatus = 'error'
       
-      this.messages.push(suggestionMessage)
-      this.showSuggestions = false
-      this.simulateAIResponse()
+      // 3秒后自动清除错误信息
+      setTimeout(() => {
+        this.errorMessage = null
+        this.connectionStatus = 'connected'
+      }, 3000)
     },
-    scrollToBottom() {
-      const chatContainer = document.querySelector('.chat-container')
-      if (chatContainer) {
-        chatContainer.scrollTop = chatContainer.scrollHeight
+
+    /**
+     * 检查连接状态
+     */
+    async checkConnection() {
+      try {
+        log.api('检查连接状态')
+        this.connectionStatus = 'connecting'
+        
+        const response = await aiService.healthCheck()
+        
+        if (response.success) {
+          this.connectionStatus = 'connected'
+          log.success('AI服务连接正常')
+        } else {
+          throw new Error('健康检查失败')
+        }
+        
+      } catch (error) {
+        log.error('连接检查失败', error)
+        this.connectionStatus = 'error'
+        this.errorMessage = '无法连接到AI服务，请检查网络连接'
       }
+    },
+
+    /**
+     * 重新连接
+     */
+    async reconnect() {
+      log.info('尝试重新连接')
+      await this.checkConnection()
+    },
+
+    /**
+     * 清除所有消息
+     */
+    clearMessages() {
+      log.user('清除消息历史')
+      this.messageService.clearMessages()
+      this.updateMessages()
+    },
+
+    /**
+     * 滚动到底部
+     */
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const chatContainer = document.querySelector('.chat-container')
+        if (chatContainer) {
+          chatContainer.scrollTop = chatContainer.scrollHeight
+        }
+      })
+    },
+
+    /**
+     * 导出聊天记录（调试用）
+     */
+    exportChatHistory() {
+      const history = this.messageService.exportMessages()
+      log.table(history, '聊天记录导出')
+      
+      // 下载为JSON文件
+      const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `chat_history_${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
     }
   },
-  mounted() {
-    this.scrollToBottom()
+  async mounted() {
+    log.info('AI助手页面初始化')
+    
+    try {
+      // 1. 初始化消息列表
+      this.updateMessages()
+      
+      // 2. 检查连接状态
+      await this.checkConnection()
+      
+      // 3. 滚动到底部
+      this.scrollToBottom()
+      
+      log.success('AI助手页面初始化完成')
+      
+    } catch (error) {
+      log.error('页面初始化失败', error)
+      this.handleError('初始化失败，请刷新页面重试')
+    }
+  },
+  
+  beforeUnmount() {
+    log.info('AI助手页面卸载')
+  },
+  
+  watch: {
+    // 监听消息变化，自动滚动到底部
+    messages: {
+      handler() {
+        this.$nextTick(() => {
+          this.scrollToBottom()
+        })
+      },
+      deep: true
+    },
+    
+    // 监听连接状态变化
+    connectionStatus(newStatus) {
+      log.info(`连接状态变更: ${newStatus}`)
+    }
+  },
+  
+  computed: {
+    // 计算是否正在处理
+    isProcessing() {
+      return this.messageService.isCurrentlyProcessing() || this.isTyping
+    },
+    
+    // 计算连接状态显示
+    connectionStatusText() {
+      const statusMap = {
+        connecting: '连接中...',
+        connected: '已连接',
+        error: '连接失败'
+      }
+      return statusMap[this.connectionStatus] || '未知状态'
+    },
+    
+    // 计算是否显示错误状态
+    showError() {
+      return this.connectionStatus === 'error' && this.errorMessage
+    }
   }
 }
 </script>
@@ -305,6 +399,15 @@ export default {
   overflow-x: auto;
   background: transparent;
   max-width: calc(100% - 32px);
+  padding: 8px 0;
+  /* 隐藏滚动条 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+  scroll-behavior: smooth;
+}
+
+.quick-actions::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
 }
 
 .quick-action-btn {
@@ -314,125 +417,51 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 10px;
-  background: white;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
   border: none;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: all 0.2s;
-  width: 80px;
-  height: 70px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 88px;
+  height: 76px;
   flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .quick-action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 1);
+}
+
+.quick-action-btn:active {
+  transform: translateY(-1px) scale(0.98);
 }
 
 .quick-action-btn > svg {
-  font-size: 20px;
-  color: #333;
+  font-size: 22px;
+  color: #4a90e2;
+  margin-bottom: 2px;
+  transition: color 0.2s ease;
+}
+
+.quick-action-btn:hover > svg {
+  color: #007aff;
 }
 
 .quick-action-btn span {
-  font-size: 11px;
-  font-weight: 500;
-  color: #333;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1d1d1f;
   text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
-.suggestions-panel {
-  position: fixed;
-  top: 50%;
-  left: 20px;
-  right: 20px;
-  transform: translateY(-50%);
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  max-height: 60vh;
-  overflow-y: auto;
-}
 
-.suggestions-header {
-  padding: 20px;
-  border-bottom: 1px solid #f2f2f7;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.suggestions-header h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1d1d1f;
-}
-
-.suggestions-header button {
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
-  border: none;
-  background: #f2f2f7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.suggestions-content {
-  padding: 20px;
-}
-
-.suggestion-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-bottom: 12px;
-}
-
-.suggestion-item:hover {
-  background: #f8f9fa;
-}
-
-.suggestion-item:last-child {
-  margin-bottom: 0;
-}
-
-.suggestion-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 20px;
-}
-
-.suggestion-text {
-  flex: 1;
-}
-
-.suggestion-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1d1d1f;
-  margin-bottom: 4px;
-}
-
-.suggestion-desc {
-  font-size: 14px;
-  color: #8e8e93;
-}
 
 @keyframes fadeIn {
   from {
@@ -454,6 +483,59 @@ export default {
   }
 }
 
+/* 连接状态样式 */
+.connection-status {
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.connection-status.connecting {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.connection-status svg {
+  font-size: 16px;
+}
+
+/* 错误横幅样式 */
+.error-banner {
+  padding: 12px 16px;
+  background: #ffebee;
+  border-bottom: 1px solid #ffcdd2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.error-banner:hover {
+  background: #ffcdd2;
+}
+
+.error-banner svg {
+  color: #d32f2f;
+  font-size: 16px;
+}
+
+.error-banner span {
+  flex: 1;
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.error-banner small {
+  color: #757575;
+  font-size: 12px;
+}
+
 @media (max-width: 430px) {
   .chat-container {
     padding: 16px;
@@ -466,22 +548,27 @@ export default {
   
   .quick-actions {
     bottom: 80px; /* Adjust for smaller screens */
-    left: 16px;
-    right: 16px;
+    left: 12px;
+    max-width: calc(100% - 24px);
+    gap: 10px;
   }
   
-  .suggestions-panel {
-    left: 16px;
-    right: 16px;
-  }
+
   
   .quick-action-btn {
-    min-width: 70px;
-    padding: 12px 8px;
+    min-width: 80px;
+    height: 72px;
+    padding: 10px 12px;
+    border-radius: 16px;
+  }
+  
+  .quick-action-btn > svg {
+    font-size: 20px;
   }
   
   .quick-action-btn span {
     font-size: 11px;
+    font-weight: 500;
   }
 }
 </style>

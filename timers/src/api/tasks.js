@@ -3,8 +3,8 @@ import http from './http'
 // 任务相关API
 const taskApi = {
   // 获取所有任务
-  getAllTasks() {
-    return http.get('/tasks')
+  getAllTasks(params = {}) {
+    return http.get('/tasks', { params })
   },
   
   // 获取未指定时间的任务

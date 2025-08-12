@@ -91,7 +91,7 @@ export default {
     return {
       formData: {
         title: '',
-        date: new Date().toISOString().split('T')[0],
+        date: '',
         time: '',
         quadrant: 2
       },
@@ -106,7 +106,25 @@ export default {
   },
   computed: {
     today() {
-      return new Date().toISOString().split('T')[0]
+      const now = new Date()
+      const y = now.getFullYear()
+      const m = String(now.getMonth() + 1).padStart(2, '0')
+      const d = String(now.getDate()).padStart(2, '0')
+      return `${y}-${m}-${d}`
+    },
+    currentTime() {
+      const now = new Date()
+      return now.toTimeString().slice(0, 5) // HH:MM格式
+    }
+  },
+  watch: {
+    visible(newVal) {
+      if (newVal) {
+        // 弹窗打开时，实时更新当前日期
+        this.formData.date = this.today
+        // 自动填充当前时间
+        this.formData.time = this.currentTime
+      }
     }
   },
   methods: {
@@ -118,15 +136,32 @@ export default {
         ...this.formData,
         id: Date.now(),
         completed: false,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        userId: 'default-user', // 可以从用户状态获取
+        // 根据时间判断timeBlockType
+        timeBlockType: this.getTimeBlockType(this.formData.time),
+        isScheduled: !!this.formData.time
       }
       this.$emit('submit', taskData)
       this.resetForm()
     },
+    getTimeBlockType(time) {
+      if (!time) return 'unscheduled'
+      
+      const hour = parseInt(time.split(':')[0])
+      if (hour >= 7 && hour < 12) {
+        return 'morning'
+      } else if (hour >= 12 && hour < 18) {
+        return 'afternoon'
+      } else if (hour >= 18 && hour < 24) {
+        return 'evening'
+      }
+      return 'unscheduled'
+    },
     resetForm() {
       this.formData = {
         title: '',
-        date: new Date().toISOString().split('T')[0],
+        date: this.today,
         time: '',
         quadrant: 2
       }

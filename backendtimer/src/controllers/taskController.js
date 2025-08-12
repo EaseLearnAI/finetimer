@@ -3,28 +3,34 @@
 const Task = require('../models/Task');
 const logger = require('../config/logger');
 
+// 默认用户ID（用于开发/测试环境）
+const DEFAULT_USER_ID = '68974d3a68e7adf1e74f68ab';
+
 // 获取所有任务
 const getAllTasks = async (req, res) => {
   try {
-    const { userId, completed, collectionId, limit = 50, offset = 0 } = req.query;
+    // 优先使用查询参数中的userId，用于开发测试
+    const userId = req.query.userId || req.user?.userId || DEFAULT_USER_ID;
+    const { completed, collectionId, limit = 50, offset = 0, date } = req.query;
     
-    // 构建查询条件
-    const query = {};
-    if (userId) query.userId = userId;
+    // 构建查询条件，自动添加userId
+    const query = { userId };
     if (completed !== undefined) query.completed = completed === 'true';
     if (collectionId) query.collectionId = collectionId;
+    // 按当天日期过滤（字符串YYYY-MM-DD匹配AddTaskModal的date）
+    if (date) query.date = date;
     
     // 查询数据
     const tasks = await Task.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .skip(offset)
+      .sort({ time: 1, createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip(parseInt(offset))
       .populate('collectionId', 'name');
     
     // 获取总数
     const total = await Task.countDocuments(query);
     
-    logger.info(`获取到 ${tasks.length} 个任务`);
+    logger.info(`用户 ${userId} 获取到 ${tasks.length} 个任务`);
     
     res.json({
       success: true,
@@ -53,48 +59,40 @@ const getAllTasks = async (req, res) => {
 // 创建新任务
 const createTask = async (req, res) => {
   try {
-    const taskData = req.body;
-
-    // 验证必要字段
+    const userId = req.user?.userId || req.body.userId || DEFAULT_USER_ID; // 从认证中间件获取
+    const taskData = { ...req.body, userId };
+    
+    // 验证必需字段
     if (!taskData.title) {
       return res.status(400).json({
         success: false,
-        message: '任务标题是必需的'
+        message: '任务标题不能为空'
       });
     }
-
-    // 如果没有提供时间信息，则明确将其设置为未调度。
-    if (!taskData.timeBlock || !taskData.timeBlock.timeBlockType || taskData.timeBlock.timeBlockType === 'unscheduled' || !taskData.timeBlock.startTime) {
-      taskData.isScheduled = false;
-      if (!taskData.timeBlock) {
-        taskData.timeBlock = {};
-      }
-      taskData.timeBlock.timeBlockType = 'unscheduled';
-    } else {
-      // 如果提供了时间信息，则将其安排好。
-      taskData.isScheduled = true;
-    }
-
-    // 创建新任务
+    
     const task = new Task(taskData);
     const savedTask = await task.save();
-
-    // 如果任务有关联的任务集，更新任务集
-    if (taskData.collectionId) {
-      const Collection = require('../models/Collection');
-      await Collection.findByIdAndUpdate(
-        taskData.collectionId,
-        { $addToSet: { tasks: savedTask._id } }
-      );
-    }
-
-    logger.info(`创建新任务: ${savedTask._id}`);
-
+    
+    // 查询新创建的任务（包含可能的关联数据）
+    const populatedTask = await Task.findById(savedTask._id)
+      .populate('collectionId', 'name');
+    
+    logger.info(`用户 ${userId} 创建任务: ${savedTask.title}`);
+    
     res.status(201).json({
       success: true,
-      data: savedTask
+      message: '任务创建成功',
+      data: populatedTask
     });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: messages[0] || '数据验证失败'
+      });
+    }
+    
     logger.error(`创建任务失败: ${error.message}`);
     res.status(500).json({
       success: false,
@@ -104,12 +102,14 @@ const createTask = async (req, res) => {
   }
 };
 
-// 获取单个任务
+// 根据ID获取单个任务
 const getTaskById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const userId = req.user?.userId || req.query.userId || DEFAULT_USER_ID;
+    const taskId = req.params.id;
     
-    const task = await Task.findById(id).populate('collectionId', 'name');
+    const task = await Task.findOne({ _id: taskId, userId })
+      .populate('collectionId', 'name');
     
     if (!task) {
       return res.status(404).json({
@@ -118,20 +118,18 @@ const getTaskById = async (req, res) => {
       });
     }
     
-    logger.info(`获取任务: ${id}`);
-    
     res.json({
       success: true,
       data: task
     });
   } catch (error) {
-    // 检查是否是无效的ObjectId导致的错误
     if (error.name === 'CastError') {
       return res.status(404).json({
         success: false,
         message: '任务未找到'
       });
     }
+    
     logger.error(`获取任务失败: ${error.message}`);
     res.status(500).json({
       success: false,
@@ -144,21 +142,15 @@ const getTaskById = async (req, res) => {
 // 更新任务
 const updateTask = async (req, res) => {
   try {
-    const { id } = req.params;
-    const updateData = req.body;
+    const userId = req.user?.userId || req.query.userId || DEFAULT_USER_ID;
+    const taskId = req.params.id;
     
-    // 获取更新前的任务信息
-    const oldTask = await Task.findById(id);
-    if (!oldTask) {
-      return res.status(404).json({
-        success: false,
-        message: '任务未找到'
-      });
-    }
+    // 不允许更新userId
+    delete req.body.userId;
     
-    const task = await Task.findByIdAndUpdate(
-      id,
-      updateData,
+    const task = await Task.findOneAndUpdate(
+      { _id: taskId, userId },
+      req.body,
       { new: true, runValidators: true }
     ).populate('collectionId', 'name');
     
@@ -169,42 +161,29 @@ const updateTask = async (req, res) => {
       });
     }
     
-    // 处理任务集关联的更新
-    const Collection = require('../models/Collection');
-    
-    // 如果任务集发生了变化
-    if (updateData.collectionId !== oldTask.collectionId?.toString()) {
-      // 从旧任务集中移除任务
-      if (oldTask.collectionId) {
-        await Collection.findByIdAndUpdate(
-          oldTask.collectionId,
-          { $pull: { tasks: id } }
-        );
-      }
-      
-      // 添加到新任务集
-      if (updateData.collectionId) {
-        await Collection.findByIdAndUpdate(
-          updateData.collectionId,
-          { $addToSet: { tasks: id } }
-        );
-      }
-    }
-    
-    logger.info(`更新任务: ${id}`);
+    logger.info(`用户 ${userId} 更新任务: ${task.title}`);
     
     res.json({
       success: true,
+      message: '任务更新成功',
       data: task
     });
   } catch (error) {
-    // 检查是否是无效的ObjectId导致的错误
     if (error.name === 'CastError') {
       return res.status(404).json({
         success: false,
         message: '任务未找到'
       });
     }
+    
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: messages[0] || '数据验证失败'
+      });
+    }
+    
     logger.error(`更新任务失败: ${error.message}`);
     res.status(500).json({
       success: false,
@@ -217,9 +196,11 @@ const updateTask = async (req, res) => {
 // 删除任务
 const deleteTask = async (req, res) => {
   try {
-    const { id } = req.params;
+    const userId = req.user?.userId || req.query.userId || DEFAULT_USER_ID;
+    const taskId = req.params.id;
     
-    const task = await Task.findById(id);
+    const task = await Task.findOneAndDelete({ _id: taskId, userId });
+    
     if (!task) {
       return res.status(404).json({
         success: false,
@@ -227,32 +208,20 @@ const deleteTask = async (req, res) => {
       });
     }
     
-    // 从任务集中移除任务
-    if (task.collectionId) {
-      const Collection = require('../models/Collection');
-      await Collection.findByIdAndUpdate(
-        task.collectionId,
-        { $pull: { tasks: id } }
-      );
-    }
-    
-    // 删除任务
-    await Task.findByIdAndDelete(id);
-    
-    logger.info(`删除任务: ${id}`);
+    logger.info(`用户 ${userId} 删除任务: ${task.title}`);
     
     res.json({
       success: true,
-      message: '任务已删除'
+      message: '任务删除成功'
     });
   } catch (error) {
-    // 检查是否是无效的ObjectId导致的错误
     if (error.name === 'CastError') {
       return res.status(404).json({
         success: false,
         message: '任务未找到'
       });
     }
+    
     logger.error(`删除任务失败: ${error.message}`);
     res.status(500).json({
       success: false,
@@ -265,9 +234,10 @@ const deleteTask = async (req, res) => {
 // 切换任务完成状态
 const toggleTaskCompletion = async (req, res) => {
   try {
-    const { id } = req.params;
+    const userId = req.user?.userId || req.query.userId || DEFAULT_USER_ID;
+    const taskId = req.params.id;
     
-    const task = await Task.findById(id);
+    const task = await Task.findOne({ _id: taskId, userId });
     
     if (!task) {
       return res.status(404).json({
@@ -276,28 +246,32 @@ const toggleTaskCompletion = async (req, res) => {
       });
     }
     
-    // 切换完成状态
     task.completed = !task.completed;
-    const updatedTask = await task.save();
+    await task.save();
     
-    logger.info(`切换任务完成状态: ${id} -> ${task.completed}`);
+    // 重新查询以获取关联数据
+    const updatedTask = await Task.findById(task._id)
+      .populate('collectionId', 'name');
+    
+    logger.info(`用户 ${userId} 切换任务完成状态: ${task.title} -> ${task.completed}`);
     
     res.json({
       success: true,
+      message: `任务已${task.completed ? '完成' : '重新激活'}`,
       data: updatedTask
     });
   } catch (error) {
-    // 检查是否是无效的ObjectId导致的错误
     if (error.name === 'CastError') {
       return res.status(404).json({
         success: false,
         message: '任务未找到'
       });
     }
-    logger.error(`切换任务完成状态失败: ${error.message}`);
+    
+    logger.error(`切换任务状态失败: ${error.message}`);
     res.status(500).json({
       success: false,
-      message: '切换任务完成状态失败',
+      message: '切换任务状态失败',
       error: error.message
     });
   }
@@ -306,31 +280,28 @@ const toggleTaskCompletion = async (req, res) => {
 // 获取未指定时间的任务
 const getUnscheduledTasks = async (req, res) => {
   try {
-    const { userId, limit = 50, offset = 0 } = req.query;
+    const userId = req.user?.userId || req.query.userId || DEFAULT_USER_ID;
+    const { limit = 20, offset = 0 } = req.query;
     
-    // 构建查询条件
     const query = {
+      userId,
+      completed: false,
       $or: [
-        { isScheduled: false },
-        { 'timeBlock.timeBlockType': 'unscheduled' },
-        { timeBlock: { $exists: false } },
-        { 'timeBlock.startTime': { $exists: false } }
+        { 'timeBlock.timeBlockType': { $in: ['unscheduled', null] } },
+        { 'timeBlock.timeBlockType': { $exists: false } },
+        { timeBlock: { $exists: false } }
       ]
     };
     
-    if (userId) query.userId = userId;
-    
-    // 查询数据
     const tasks = await Task.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .skip(offset)
+      .sort({ priority: 1, createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip(parseInt(offset))
       .populate('collectionId', 'name');
     
-    // 获取总数
     const total = await Task.countDocuments(query);
     
-    logger.info(`获取到 ${tasks.length} 个未指定时间的任务`);
+    logger.info(`用户 ${userId} 获取到 ${tasks.length} 个未安排时间的任务`);
     
     res.json({
       success: true,
@@ -340,23 +311,24 @@ const getUnscheduledTasks = async (req, res) => {
       offset: parseInt(offset)
     });
   } catch (error) {
-    logger.error(`获取未指定时间任务失败: ${error.message}`);
+    logger.error(`获取未安排任务失败: ${error.message}`);
     res.status(500).json({
       success: false,
-      message: '获取未指定时间任务失败',
+      message: '获取未安排任务失败',
       error: error.message
     });
   }
 };
 
-// 根据时间块获取任务
+// 根据时间块类型获取任务
 const getTasksByTimeBlock = async (req, res) => {
   try {
+    const userId = req.user?.userId || req.query.userId || DEFAULT_USER_ID;
     const { timeBlockType } = req.params;
-    const { userId, limit = 50, offset = 0 } = req.query;
+    const { date, limit = 20, offset = 0 } = req.query;
     
     // 验证时间块类型
-    const validTimeBlocks = ['morning', 'forenoon', 'afternoon', 'evening', 'unscheduled'];
+    const validTimeBlocks = ['morning', 'forenoon', 'afternoon', 'evening'];
     if (!validTimeBlocks.includes(timeBlockType)) {
       return res.status(400).json({
         success: false,
@@ -364,30 +336,30 @@ const getTasksByTimeBlock = async (req, res) => {
       });
     }
     
-    // 构建查询条件
     const query = {
-      'timeBlock.timeBlockType': timeBlockType,
-      isScheduled: true
+      userId,
+      'timeBlock.timeBlockType': timeBlockType
     };
     
-    if (userId) query.userId = userId;
+    if (date) {
+      query.date = date;
+    }
     
-    // 查询数据
     const tasks = await Task.find(query)
-      .sort({ 'timeBlock.startTime': 1 })
-      .limit(limit)
-      .skip(offset)
+      .sort({ 'timeBlock.startTime': 1, createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip(parseInt(offset))
       .populate('collectionId', 'name');
     
-    // 获取总数
     const total = await Task.countDocuments(query);
     
-    logger.info(`获取到 ${tasks.length} 个${timeBlockType}时间块的任务`);
+    logger.info(`用户 ${userId} 获取到 ${tasks.length} 个 ${timeBlockType} 时间块任务`);
     
     res.json({
       success: true,
       data: tasks,
       total,
+      timeBlockType,
       limit: parseInt(limit),
       offset: parseInt(offset)
     });

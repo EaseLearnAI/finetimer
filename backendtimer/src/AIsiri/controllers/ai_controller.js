@@ -1,10 +1,12 @@
 'use strict';
 
 const AITaskService = require('../services/ai_task_service');
+const SchedulerManagerService = require('../services/scheduler_manager_service');
 
 class AIController {
   constructor() {
     this.aiTaskService = new AITaskService();
+    this.schedulerManager = new SchedulerManagerService();
     console.log('🎮 AI控制器初始化完成');
   }
 
@@ -81,11 +83,20 @@ class AIController {
       console.log(`📥 接收到计划生成请求:`);
       console.log(`  - 目标: ${goal}`);
       console.log(`  - 类型: ${goalType}`);
-      console.log(`  - 回答数量: ${Array.isArray(userAnswers) ? userAnswers.length : 'N/A'}`);
+      console.log(`  - 回答数量: ${Array.isArray(userAnswers) ? userAnswers.length : (typeof userAnswers === 'object' && userAnswers ? Object.keys(userAnswers).length : 'N/A')}`);
       console.log(`  - 用户ID: ${userId || '未提供'}`);
 
       // 调用AI服务生成计划
       const result = await this.aiTaskService.generatePlanFromAnswers(goal, goalType, userAnswers, userId);
+
+      // 计划生成后自动触发一次未安排任务的调度（确保任务页可见）
+      try {
+        const uid = userId || undefined;
+        const scheduleResult = await this.schedulerManager.scheduleUnscheduledTasks(uid || undefined);
+        console.log('🗓️  自动调度结果:', scheduleResult);
+      } catch (e) {
+        console.warn('⚠️ 自动调度失败(忽略):', e.message);
+      }
 
       console.log(`📤 计划生成结果: ${result.success ? '成功' : '失败'}`);
       
@@ -254,6 +265,63 @@ class AIController {
   }
 
   /**
+   * 根据习惯问题回答生成习惯计划
+   * POST /ai/generate-habit-plan
+   */
+  async generateHabitPlan(req, res) {
+    console.log('\n🌐 === API调用: 生成习惯计划 ===');
+    
+    try {
+      const { userInput, habitType, questionAnswers, userId } = req.body;
+
+      // 参数验证
+      if (!userInput || !habitType || !questionAnswers) {
+        console.log('❌ 参数验证失败');
+        return res.status(400).json({
+          success: false,
+          error: '缺少必需参数: userInput, habitType, questionAnswers'
+        });
+      }
+
+      console.log(`📥 接收到习惯计划生成请求:`);
+      console.log(`  - 用户输入: ${userInput}`);
+      console.log(`  - 习惯类型: ${habitType}`);
+      console.log(`  - 回答数量: ${Array.isArray(questionAnswers) ? questionAnswers.length : 'N/A'}`);
+      console.log(`  - 用户ID: ${userId || '未提供'}`);
+
+      // 调用AI服务生成习惯计划
+      const result = await this.aiTaskService.generateHabitPlanFromAnswers(
+        userInput, 
+        habitType, 
+        questionAnswers, 
+        userId
+      );
+
+      console.log(`📤 习惯计划生成结果: ${result.success ? '成功' : '失败'}`);
+      
+      // 返回结果
+      res.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        request: { userInput, habitType, userId },
+        ...result
+      });
+
+    } catch (error) {
+      console.error('❌ 习惯计划生成API错误:', error.message);
+
+      res.status(500).json({
+        success: false,
+        error: '习惯计划生成失败',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
+    } finally {
+      console.log('🌐 === 习惯计划生成API调用结束 ===\n');
+    }
+  }
+
+  /**
    * 测试AI连接
    * GET /ai/test-connection
    */
@@ -341,6 +409,46 @@ class AIController {
       });
     } finally {
       console.log('🌐 === AI状态查询结束 ===\n');
+    }
+  }
+
+  /**
+   * 手动调度未安排时间的任务
+   * POST /ai/schedule-unscheduled
+   */
+  async scheduleUnscheduledTasks(req, res) {
+    console.log('\n🌐 === API调用: 手动调度未安排任务 ===');
+    
+    try {
+      const { userId } = req.body;
+      
+      console.log(`📥 接收到手动调度请求:`);
+      console.log(`  - 用户ID: ${userId || '未提供'}`);
+
+      // 调用调度管理服务
+      const result = await this.schedulerManager.scheduleUnscheduledTasks(userId);
+
+      console.log(`📤 调度结果: ${result.success ? '成功' : '失败'}`);
+      
+      // 返回结果
+      res.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        request: { userId },
+        ...result
+      });
+
+    } catch (error) {
+      console.error('❌ 手动调度API错误:', error.message);
+
+      res.status(500).json({
+        success: false,
+        error: '调度任务失败',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
+    } finally {
+      console.log('🌐 === 手动调度API调用结束 ===\n');
     }
   }
 }

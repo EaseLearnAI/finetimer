@@ -1,16 +1,16 @@
 <template>
   <div class="app-container">
     <!-- Header with Back Button -->
-    <div class="header">
-      <div class="header-top">
-        <div class="back-btn" @click="goBack">
-          <font-awesome-icon icon="arrow-left" />
+      <div class="header">
+        <div class="header-top">
+          <div class="back-btn" @click="goBack" title="返回任务列表">
+            <font-awesome-icon icon="arrow-left" />
+          </div>
+          <h1>番茄工作法</h1>
+          <div class="header-spacer"></div>
         </div>
-        <h1>番茄工作法</h1>
-        <div class="header-spacer"></div>
+        <div class="task-name">{{ taskName }}</div>
       </div>
-      <div class="task-name">{{ taskName }}</div>
-    </div>
 
     <!-- Timer Container -->
     <div class="timer-container">
@@ -83,6 +83,7 @@
 <script>
 import TimerCircle from '../components/pomodoro/TimerCircle.vue'
 import pomodoroApi from '../api/pomodoros.js'
+import api from '@/api'
 
 export default {
   name: 'PomodoroTimer',
@@ -184,6 +185,19 @@ export default {
     async completeTimer() {
       // 记录提前完成的番茄钟
       await this.savePomodoroRecord(true)
+      // 若带有taskId，回写任务完成状态
+      try {
+        const taskId = this.$route.query.taskId
+        if (taskId) {
+          console.log('🔄 [Pomodoro] 更新任务完成状态:', taskId)
+          const resp = await api.tasks.updateTask(taskId, { completed: true })
+          console.log('✅ [Pomodoro] 任务状态更新响应:', resp)
+        } else {
+          console.warn('⚠️ [Pomodoro] 未提供taskId，无法回写任务完成状态')
+        }
+      } catch (e) {
+        console.error('❌ [Pomodoro] 更新任务完成状态失败:', e)
+      }
       if (this.currentMode === 'pomodoro') {
         this.completedPomodoros++
       }
@@ -263,7 +277,8 @@ export default {
       return this.quotes[Math.floor(Math.random() * this.quotes.length)]
     },
     goBack() {
-      this.$router.push(this.fromRoute)
+      const target = this.fromRoute || '/task'
+      this.$router.replace(target)
     },
     formatTime(seconds) {
       const minutes = Math.floor(seconds / 60)
@@ -285,6 +300,16 @@ export default {
         completionStatus = 'early'
       }
       
+      // 计算本地日期与时间段
+      const y = endTime.getFullYear()
+      const m = String(endTime.getMonth() + 1).padStart(2, '0')
+      const d = String(endTime.getDate()).padStart(2, '0')
+      const localDate = `${y}-${m}-${d}`
+      const hour = endTime.getHours()
+      let timeBlockType = 'evening'
+      if (hour >= 7 && hour < 12) timeBlockType = 'morning'
+      else if (hour >= 12 && hour < 18) timeBlockType = 'afternoon'
+
       const pomodoroData = {
         taskName: this.taskName,
         mode: this.currentMode,
@@ -294,8 +319,11 @@ export default {
         actualFocusTime: actualDuration, // 实际专注时间
         completed: completed,
         completionStatus: completionStatus,
-        userId: 'default', // 可以根据实际用户系统调整
-        sourceRoute: this.fromRoute
+        userId: '68974d3a68e7adf1e74f68ab', // 可以根据实际用户系统调整
+        sourceRoute: this.fromRoute,
+        date: localDate,
+        timeBlockType,
+        taskId: this.$route.query.taskId || null
       }
       
       try {
@@ -313,12 +341,16 @@ export default {
     },
     async loadTodayPomodoros() {
       try {
-        const response = await pomodoroApi.getAllPomodoros()
-        const today = new Date().toDateString()
-        const todayPomodoros = response.data.data.filter(p => {
-          const pomodoroDate = new Date(p.createdAt).toDateString()
-          return pomodoroDate === today && p.mode === 'pomodoro' && p.completed
+        const today = new Date()
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
+        const response = await pomodoroApi.getAllPomodoros({
+          userId: '68974d3a68e7adf1e74f68ab',
+          startDate: startOfDay.toISOString(),
+          endDate: endOfDay.toISOString()
         })
+        const list = response.data?.data || response.data || []
+        const todayPomodoros = list.filter(p => p.mode === 'pomodoro' && p.completed)
         this.completedPomodoros = todayPomodoros.length
       } catch (error) {
         console.error('加载今日番茄钟记录失败:', error)
@@ -329,12 +361,13 @@ export default {
 </script>
 
 <style scoped>
-.app-container {
+  .app-container {
   width: 100%;
   height: 100vh;
+  /* 使用更高级的渐变与真实背景图融合 */
   background: 
-    linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%),
-    url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover no-repeat;
+    linear-gradient(115deg, rgba(45, 104, 240, 0.92) 0%, rgba(128, 75, 216, 0.90) 50%, rgba(180, 70, 190, 0.88) 100%),
+    url('https://images.unsplash.com/photo-1517832606299-7ae9b720a186?auto=format&fit=crop&w=2100&q=80') center/cover no-repeat;
   display: flex;
   flex-direction: column;
   color: white;
@@ -399,7 +432,7 @@ export default {
   font-weight: 500;
 }
 
-.timer-container {
+  .timer-container {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -417,13 +450,13 @@ export default {
   align-items: center;
 }
 
-.control-btn {
+  .control-btn {
   width: 70px;
   height: 70px;
   border-radius: 35px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(20px);
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.30);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -431,7 +464,7 @@ export default {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 26px;
   color: white;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.18);
 }
 
 .control-btn:hover {
@@ -444,27 +477,27 @@ export default {
   transform: translateY(0) scale(0.98);
 }
 
-.start-btn {
-  background: rgba(76, 175, 80, 0.3);
-  border-color: rgba(76, 175, 80, 0.5);
+  .start-btn {
+  background: rgba(76, 175, 80, 0.35);
+  border-color: rgba(76, 175, 80, 0.55);
 }
 
 .start-btn:hover {
   background: rgba(76, 175, 80, 0.4);
 }
 
-.pause-btn {
-  background: rgba(255, 193, 7, 0.3);
-  border-color: rgba(255, 193, 7, 0.5);
+  .pause-btn {
+  background: rgba(255, 193, 7, 0.35);
+  border-color: rgba(255, 193, 7, 0.55);
 }
 
 .pause-btn:hover {
   background: rgba(255, 193, 7, 0.4);
 }
 
-.stop-btn {
-  background: rgba(244, 67, 54, 0.3);
-  border-color: rgba(244, 67, 54, 0.5);
+  .stop-btn {
+  background: rgba(244, 67, 54, 0.35);
+  border-color: rgba(244, 67, 54, 0.55);
 }
 
 .stop-btn:hover {

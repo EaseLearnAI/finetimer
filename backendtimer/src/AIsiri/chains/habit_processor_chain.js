@@ -23,7 +23,8 @@ class HabitProcessorChain extends BaseChain {
       // 调用LLM
       const response = await this.callLLM(prompt, {
         temperature: 0.7,
-        max_tokens: 2000
+        max_tokens: 2000,
+        mock_type: 'habit'
       });
 
       // 解析JSON响应
@@ -182,7 +183,8 @@ class HabitProcessorChain extends BaseChain {
 
       const response = await this.callLLM(prompt, {
         temperature: 0.8,
-        max_tokens: 300
+        max_tokens: 300,
+        mock_type: 'habit'
       });
 
       const result = await this.parseJSONResponse(response);
@@ -228,7 +230,8 @@ class HabitProcessorChain extends BaseChain {
 
       const response = await this.callLLM(prompt, {
         temperature: 0.7,
-        max_tokens: 600
+        max_tokens: 600,
+        mock_type: 'habit'
       });
 
       const result = await this.parseJSONResponse(response);

@@ -11,7 +11,7 @@ router.use((req, res, next) => {
   console.log(`\n🔗 AI路由请求: ${req.method} ${req.path}`);
   console.log(`⏰ 时间: ${new Date().toISOString()}`);
   console.log(`📍 IP: ${req.ip}`);
-  if (Object.keys(req.body).length > 0) {
+  if (req.body && Object.keys(req.body).length > 0) {
     console.log(`📦 请求体:`, JSON.stringify(req.body, null, 2));
   }
   next();
@@ -52,6 +52,15 @@ router.post('/adjust-plan', async (req, res) => {
   await aiController.adjustPlan(req, res);
 });
 
+/**
+ * @route POST /ai/schedule-unscheduled
+ * @desc 手动调度所有未安排时间的任务
+ * @body {string} [userId] - 用户ID（可选）
+ */
+router.post('/schedule-unscheduled', async (req, res) => {
+  await aiController.scheduleUnscheduledTasks(req, res);
+});
+
 // === 辅助功能路由 ===
 
 /**
@@ -71,6 +80,33 @@ router.post('/classify-input', async (req, res) => {
  */
 router.post('/generate-questions', async (req, res) => {
   await aiController.generateQuestions(req, res);
+});
+
+/**
+ * @route POST /ai/generate-habit-plan
+ * @desc 根据习惯问题回答生成习惯计划
+ * @body {string} userInput - 用户原始输入
+ * @body {string} habitType - 习惯类型
+ * @body {array} questionAnswers - 用户对问题的回答
+ * @body {string} [userId] - 用户ID（可选）
+ */
+router.post('/generate-habit-plan', async (req, res) => {
+  await aiController.generateHabitPlan(req, res);
+});
+
+/**
+ * @route POST /ai/schedule-unscheduled
+ * @desc 触发未安排任务的自动调度
+ * @body {string} [userId] - 用户ID（可选）
+ */
+router.post('/schedule-unscheduled', async (req, res) => {
+  try {
+    const userId = req.body?.userId;
+    const result = await aiController.schedulerManager.scheduleUnscheduledTasks(userId);
+    res.json({ success: true, result });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 // === 系统状态路由 ===

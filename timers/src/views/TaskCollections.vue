@@ -1,253 +1,319 @@
 <template>
   <div class="collections-container">
+    <!-- Header -->
     <div class="header">
       <div class="header-title">任务集</div>
-      <button class="create-collection-btn" @click="openCreateModal" title="创建新任务集">
+      <button 
+        class="create-collection-btn" 
+        @click="openCreateCollectionModal" 
+        title="创建新任务集"
+      >
         <font-awesome-icon icon="plus" />
       </button>
     </div>
-
-    <!-- 创建任务集弹窗 -->
-    <div class="modal" :class="{ show: showCreateModal }">
-      <div class="modal-content">
-        <div class="modal-header">创建新任务集</div>
-        <input 
-          type="text" 
-          class="modal-input" 
-          v-model="newCollectionName" 
-          placeholder="请输入任务集名称" 
-          maxlength="20"
-          @keyup.enter="createCollection"
-        >
-        <div class="modal-actions">
-          <button class="modal-btn cancel" @click="closeCreateModal">取消</button>
-          <button class="modal-btn confirm" @click="createCollection">创建</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="content">
-      <div v-if="collections.length === 0" class="empty-state">
-        <div class="empty-icon">
-          <font-awesome-icon icon="folder-open" />
-        </div>
-        <div class="empty-title">暂无任务集</div>
-        <div class="empty-subtitle">点击右上角 + 创建你的第一个任务集</div>
-      </div>
-
-      <div v-else class="collections-list">
+    
+    <!-- Content -->
+    <div class="content" v-if="!loading">
+      <!-- Collections List -->
+      <template v-if="collections.length > 0">
         <CollectionCard
           v-for="collection in collections"
-          :key="collection.id"
+          :key="collection._id"
           :collection="collection"
-          @toggle-expand="toggleCollectionExpand"
-          @add-subtask="addSubtaskToCollection"
-          @subtask-added="addSubtaskToCollection"
-          @delete="deleteCollection"
+          @toggle-expansion="handleToggleExpansion"
+          @add-subtask="openAddSubtaskModal"
+          @toggle-subtask="handleToggleSubtask"
         />
+      </template>
+      
+      <!-- Empty State -->
+      <div v-else class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">暂无任务集</div>
+        <div class="empty-subtitle">点击右上角 + 按钮创建第一个任务集</div>
       </div>
     </div>
-
+    
+    <!-- Loading State -->
+    <div v-else class="loading-container">
+      <LoadingSpinner />
+    </div>
+    
+    <!-- Floating Add Button -->
+    <button class="add-collection-btn" @click="openCreateCollectionModal">
+      <font-awesome-icon icon="plus" />
+    </button>
+    
+    <!-- Tab Bar -->
     <TabBar />
+    
+    <!-- Collection Modal -->
+    <CollectionModal
+      :visible="showCollectionModal"
+      :collection="editingCollection"
+      @close="closeCollectionModal"
+      @submit="handleCollectionSubmit"
+    />
+    
+    <!-- Subtask Modal -->
+    <SubtaskModal
+      :visible="showSubtaskModal"
+      :collection-id="currentCollectionId"
+      :subtask="editingSubtask"
+      @close="closeSubtaskModal"
+      @submit="handleSubtaskSubmit"
+    />
   </div>
 </template>
 
 <script>
-import CollectionCard from '@/components/task-collections/CollectionCard.vue'
-import TabBar from '@/components/common/TabBar.vue'
+import CollectionCard from '../components/task-collections/CollectionCard.vue'
+import CollectionModal from '../components/task-collections/CollectionModal.vue'
+import SubtaskModal from '../components/task-collections/SubtaskModal.vue'
+import TabBar from '../components/common/TabBar.vue'
+import LoadingSpinner from '../components/common/LoadingSpinner.vue'
 import api from '@/api'
+import collectionApi from '@/api/collections'
 
 export default {
   name: 'TaskCollections',
   components: {
     CollectionCard,
-    TabBar
+    CollectionModal,
+    SubtaskModal,
+    TabBar,
+    LoadingSpinner
   },
   data() {
     return {
       collections: [],
-      showCreateModal: false,
-      newCollectionName: ''
+      loading: true,
+      
+      // Modal states
+      showCollectionModal: false,
+      showSubtaskModal: false,
+      editingCollection: null,
+      editingSubtask: null,
+      currentCollectionId: ''
     }
   },
-  async created() {
-    await this.fetchCollections()
+  async mounted() {
+    await this.loadCollections();
   },
   methods: {
-    async fetchCollections() {
+    // 加载任务集列表
+    async loadCollections() {
       try {
-        console.log('开始获取任务集数据...')
-        const response = await api.collections.getAllCollections()
-        console.log('任务集API响应:', response)
+        this.loading = true;
+        console.log('🔄 [TaskCollections] 开始加载任务集列表...');
         
-        // 转换后端数据结构为前端需要的数据结构
-        this.collections = response.data.map(collection => ({
-          id: collection._id,
-          name: collection.name,
-          expanded: collection.expanded || false,
-          subtasks: collection.tasks ? collection.tasks.map(task => ({
-            id: task._id,
-            name: task.title,
-            time: task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '待定',
-            priority: this.getPriorityFromQuadrant(task.quadrant),
-            completed: task.completed
-          })) : []
-        }))
+        // 加载普通任务集  
+        const response = await collectionApi.getCollections({ userId: '68974d3a68e7adf1e74f68ab' });
+        console.log('📋 [TaskCollections] API响应:', response);
         
-        console.log('转换后的任务集数据:', this.collections)
-      } catch (error) {
-        console.error('获取任务集失败:', error)
-        console.log('使用模拟数据作为备选')
-        this.initializeMockData()
-      }
-    },
-    getPriorityFromQuadrant(quadrant) {
-      const priorityMap = {
-        1: 'high',
-        2: 'medium', 
-        3: 'low',
-        4: 'low'
-      }
-      return priorityMap[quadrant] || 'medium'
-    },
-    initializeMockData() {
-      this.collections = [
-        {
-          id: 'mock1',
-          name: '考研英语复习',
-          expanded: false,
-          subtasks: [
-            {
-              id: 'mocktask1',
-              name: '英语单词背诵',
-              time: '每天 30 分钟',
-              priority: 'high',
-              completed: true
-            }
-          ]
-        }
-      ]
-    },
-    openCreateModal() {
-      this.showCreateModal = true
-      this.newCollectionName = ''
-    },
-    closeCreateModal() {
-      this.showCreateModal = false
-      this.newCollectionName = ''
-    },
-    async createCollection() {
-      if (!this.newCollectionName.trim()) return
-      
-      try {
-        console.log('开始创建任务集:', this.newCollectionName.trim())
-        const response = await api.collections.createCollection({
-          name: this.newCollectionName.trim()
-        })
-        
-        console.log('任务集创建成功:', response)
-        
-        // 转换后端数据结构为前端需要的数据结构
-        const newCollection = {
-          id: response.data._id,
-          name: response.data.name,
-          expanded: response.data.expanded || false,
-          subtasks: []
-        }
-        
-        this.collections.unshift(newCollection)
-        this.closeCreateModal()
-      } catch (error) {
-        console.error('创建任务集失败:', error)
-        // 如果创建失败，使用本地模拟
-        const newCollection = {
-          id: Date.now(),
-          name: this.newCollectionName.trim(),
-          expanded: false,
-          subtasks: []
-        }
-        
-        this.collections.unshift(newCollection)
-        this.closeCreateModal()
-      }
-    },
-    // 添加子任务到任务集
-    addSubtaskToCollection({ collectionId, subtask }) {
-      const collection = this.collections.find(c => c.id === collectionId)
-      if (collection) {
-        // 确保subtasks数组存在
-        if (!collection.subtasks) {
-          collection.subtasks = []
-        }
-        collection.subtasks.push(subtask)
-        console.log('子任务已添加到任务集:', collectionId, subtask)
-      }
-    },
-    // 删除任务集
-    async deleteCollection(collectionId) {
-      try {
-        console.log('开始删除任务集:', collectionId)
-        const response = await api.collections.deleteCollection(collectionId)
-        
-        console.log('任务集删除成功:', response)
-        
-        const index = this.collections.findIndex(c => c.id === collectionId)
-        if (index !== -1) {
-          this.collections.splice(index, 1)
-          // this.$message.success('任务集删除成功')
+        if (response && response.data && response.data.success) {
+          this.collections = response.data.data || [];
+          console.log('✅ [TaskCollections] 成功加载任务集列表:', this.collections.length);
+        } else {
+          const message = response?.data?.message || '响应格式错误'
+          console.error('❌ [TaskCollections] 加载任务集失败:', message);
+          this.$toast?.error(message || '加载任务集失败');
         }
       } catch (error) {
-        console.error('删除任务集失败:', error)
-        // this.$message.error('删除任务集失败: ' + (error.response?.data?.message || error.message))
+        console.error('💥 [TaskCollections] 加载任务集异常:', error);
+        this.$toast?.error('加载任务集失败');
+      } finally {
+        this.loading = false;
       }
     },
-    async toggleCollectionExpand(collectionId) {
+    
+    // 任务集相关操作
+    openCreateCollectionModal() {
+      this.editingCollection = null;
+      this.showCollectionModal = true;
+    },
+    
+    closeCollectionModal() {
+      this.showCollectionModal = false;
+      this.editingCollection = null;
+    },
+    
+    async handleCollectionSubmit(collectionData) {
       try {
-        const collection = this.collections.find(c => c.id === collectionId)
-        if (collection) {
-          console.log('切换任务集展开状态:', collectionId, !collection.expanded)
-          const response = await api.collections.toggleCollectionExpand(collectionId)
+        let response;
+        // 统一带上 userId，避免后端按 userId 过滤时查不到新建数据
+        const payload = { ...collectionData, userId: '68974d3a68e7adf1e74f68ab' }
+        if (collectionData._id) {
+          // 编辑现有任务集
+          response = await collectionApi.updateCollection(collectionData._id, payload);
+        } else {
+          // 创建新任务集
+          response = await collectionApi.createCollection(payload);
+        }
+        
+        if (response.data.success) {
+          this.$toast?.success(collectionData._id ? '任务集更新成功' : '任务集创建成功');
+          this.closeCollectionModal();
+          await this.loadCollections(); // 重新加载列表
+        } else {
+          this.$toast?.error(response.data.message || '操作失败');
+        }
+      } catch (error) {
+        console.error('任务集操作失败:', error);
+        this.$toast?.error('操作失败');
+      }
+    },
+    
+    // 子任务相关操作
+    openAddSubtaskModal(collectionId) {
+      this.currentCollectionId = collectionId;
+      // 预置一个草稿对象，确保子任务创建时携带collectionId
+      this.editingSubtask = {
+        title: '',
+        collectionId: collectionId,
+        priority: 'medium',
+        completed: false
+      };
+      this.showSubtaskModal = true;
+    },
+    
+    openEditSubtaskModal(subtask) {
+      this.currentCollectionId = subtask.collectionId;
+      this.editingSubtask = subtask;
+      this.showSubtaskModal = true;
+    },
+    
+    closeSubtaskModal() {
+      this.showSubtaskModal = false;
+      this.editingSubtask = null;
+      this.currentCollectionId = '';
+    },
+    
+    async handleSubtaskSubmit(subtaskData) {
+      try {
+        console.log('🔄 [TaskCollections] 开始处理子任务提交:', subtaskData);
+        
+        // 添加userId字段
+        const taskPayload = {
+          ...subtaskData,
+          collectionId: this.currentCollectionId,
+          userId: '68974d3a68e7adf1e74f68ab' // 可以从用户状态获取
+        };
+        
+        let response;
+        if (subtaskData._id) {
+          // 编辑现有子任务
+          console.log('📝 [TaskCollections] 更新现有子任务:', subtaskData._id);
+          response = await api.tasks.updateTask(subtaskData._id, taskPayload);
+        } else {
+          // 创建新子任务
+          console.log('🆕 [TaskCollections] 创建新子任务');
+          response = await api.tasks.createTask(taskPayload);
+        }
+        
+        console.log('✅ [TaskCollections] 子任务API响应:', response);
+        
+        if (response.success) {
+          const message = subtaskData._id ? '子任务更新成功' : '子任务添加成功';
+          console.log('🎉 [TaskCollections]', message);
+          this.$toast?.success(message);
           
-          console.log('任务集展开状态更新成功:', response)
-          collection.expanded = !collection.expanded
+          // 关闭弹窗
+          this.closeSubtaskModal();
+          
+          // 重新加载列表以显示更新
+          console.log('🔄 [TaskCollections] 重新加载任务集列表');
+          await this.loadCollections();
+        } else {
+          console.error('❌ [TaskCollections] 子任务操作失败:', response.message);
+          this.$toast?.error(response.message || '操作失败');
         }
       } catch (error) {
-        console.error('切换任务集展开状态失败:', error)
-        // this.$message.error('操作失败: ' + (error.response?.data?.message || error.message))
+        console.error('💥 [TaskCollections] 子任务操作异常:', error);
+        this.$toast?.error('操作失败');
       }
     },
-    async toggleSubtask({ collectionId, subtaskId }) {
+    
+    async handleToggleSubtask(subtaskId) {
       try {
-        const collection = this.collections.find(c => c.id === collectionId)
-        if (collection) {
-          const subtask = collection.subtasks.find(s => s.id === subtaskId)
-          if (subtask) {
-            // 先更新本地状态以提供即时反馈
-            subtask.completed = !subtask.completed
-            
-            // 调用API更新任务状态
-            await api.tasks.updateTask(subtaskId, {
-              completed: subtask.completed
-            })
+        console.log('🔄 [TaskCollections] 切换子任务状态:', subtaskId);
+        
+        // 找到对应的子任务
+        let targetSubtask = null;
+        let targetCollection = null;
+        
+        for (const collection of this.collections) {
+          if (collection.subtasks) {
+            const subtask = collection.subtasks.find(st => st._id === subtaskId);
+            if (subtask) {
+              targetSubtask = subtask;
+              targetCollection = collection;
+              break;
+            }
           }
         }
+        
+        if (!targetSubtask) {
+          console.error('❌ [TaskCollections] 未找到目标子任务:', subtaskId);
+          return;
+        }
+        
+        // 切换完成状态
+        const newCompleted = !targetSubtask.completed;
+        console.log('🔄 [TaskCollections] 新状态:', newCompleted);
+        
+        const response = await api.tasks.updateTask(subtaskId, {
+          completed: newCompleted
+        });
+        
+        console.log('✅ [TaskCollections] 状态更新响应:', response);
+        
+        if (response.success) {
+          // 立即更新本地状态
+          targetSubtask.completed = newCompleted;
+          
+          // 重新计算进度
+          const completed = targetCollection.subtasks.filter(st => st.completed).length;
+          const total = targetCollection.subtasks.length;
+          const progressPercentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+          
+          console.log(`📊 [TaskCollections] 进度更新: ${completed}/${total} = ${progressPercentage}%`);
+          
+          // 强制重新渲染
+          this.$forceUpdate();
+          
+          this.$toast?.success(`子任务已${newCompleted ? '完成' : '取消完成'}`);
+        } else {
+          console.error('❌ [TaskCollections] 状态更新失败:', response.message);
+          this.$toast?.error(response.message || '更新失败');
+        }
       } catch (error) {
-        console.error('更新子任务状态失败:', error)
-        // 如果API调用失败，可以在这里添加错误处理逻辑
-        // 例如，恢复之前的完成状态
-        // subtask.completed = !subtask.completed
+        console.error('💥 [TaskCollections] 切换子任务状态异常:', error);
+        this.$toast?.error('更新失败');
       }
+    },
+    
+    handleToggleExpansion(collectionId, isExpanded) {
+      // 这里可以保存展开状态到localStorage或状态管理
+      console.log(`Collection ${collectionId} expanded: ${isExpanded}`);
     }
   }
 }
 </script>
 
 <style scoped>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .collections-container {
   height: 100vh;
   display: flex;
   flex-direction: column;
   background: #f8f9fe;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .header {
@@ -257,6 +323,9 @@ export default {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .header-title {
@@ -290,6 +359,14 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 20px 16px;
+  padding-bottom: 120px; /* 为底部导航栏和浮动按钮留出空间 */
+}
+
+.loading-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .empty-state {
@@ -316,121 +393,33 @@ export default {
   color: #8e8e93;
 }
 
-.collections-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.modal {
-  display: none;
+.add-collection-btn {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
-}
-
-.modal.show {
+  bottom: 100px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #4a90e2, #007aff);
+  color: white;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 20px;
-  padding: 32px;
-  width: 90%;
-  max-width: 320px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  animation: slideUp 0.3s ease-out;
-}
-
-.modal-header {
-  font-size: 20px;
-  font-weight: 600;
-  color: #1d1d1f;
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.modal-input {
-  width: 100%;
-  padding: 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 16px;
-  font-family: 'Inter', sans-serif;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-}
-
-.modal-input:focus {
-  outline: none;
-  border-color: #007aff;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.modal-btn {
-  flex: 1;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  font-size: 24px;
 }
 
-.modal-btn.cancel {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
-.modal-btn.cancel:hover {
-  background: #e5e7eb;
-}
-
-.modal-btn.confirm {
-  background: linear-gradient(135deg, #4a90e2, #007aff);
-  color: white;
-}
-
-.modal-btn.confirm:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
-}
-
-
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { 
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0);
-  }
+.add-collection-btn:hover {
+  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 8px 25px rgba(74, 144, 226, 0.5);
 }
 
 /* 移动端适配 */
-@media (max-width: 430px) {
+@media (max-width: 768px) {
   .header {
     padding: 12px 20px;
   }
@@ -441,13 +430,36 @@ export default {
   
   .content {
     padding: 16px 12px;
+    padding-bottom: 120px;
   }
   
-  .modal-content {
-    padding: 24px 20px;
-    margin: 0 16px;
+  .add-collection-btn {
+    bottom: 90px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
   }
-  
+}
 
+/* 超小屏幕适配 */
+@media (max-width: 480px) {
+  .header {
+    padding: 10px 16px;
+  }
+  
+  .header-title {
+    font-size: 24px;
+  }
+  
+  .create-collection-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+  
+  .content {
+    padding: 12px 8px;
+  }
 }
 </style>

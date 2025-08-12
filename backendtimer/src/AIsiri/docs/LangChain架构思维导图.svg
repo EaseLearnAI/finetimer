@@ -1,0 +1,192 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #2c3e50; }
+      .main-node { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #ffffff; }
+      .sub-node { font-family: Arial, sans-serif; font-size: 14px; fill: #2c3e50; }
+      .detail-node { font-family: Arial, sans-serif; font-size: 12px; fill: #34495e; }
+      .main-box { fill: #3498db; stroke: #2980b9; stroke-width: 2; rx: 10; }
+      .chain-box { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; rx: 8; }
+      .service-box { fill: #27ae60; stroke: #229954; stroke-width: 2; rx: 8; }
+      .config-box { fill: #f39c12; stroke: #e67e22; stroke-width: 2; rx: 8; }
+      .prompt-box { fill: #9b59b6; stroke: #8e44ad; stroke-width: 2; rx: 8; }
+      .flow-line { stroke: #7f8c8d; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .connection-line { stroke: #bdc3c7; stroke-width: 1; fill: none; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d" />
+    </marker>
+  </defs>
+  
+  <!-- 标题 -->
+  <text x="600" y="30" text-anchor="middle" class="title">AI任务助手 LangChain 架构设计</text>
+  
+  <!-- 核心服务层 -->
+  <rect x="450" y="60" width="300" height="60" class="main-box"/>
+  <text x="600" y="85" text-anchor="middle" class="main-node">AITaskService</text>
+  <text x="600" y="105" text-anchor="middle" class="sub-node">核心任务处理服务</text>
+  
+  <!-- 输入处理流程 -->
+  <rect x="50" y="160" width="200" height="40" class="service-box"/>
+  <text x="150" y="185" text-anchor="middle" class="main-node">用户输入处理流程</text>
+  
+  <!-- 链条层 (Chains) -->
+  <g id="chains">
+    <text x="100" y="240" class="sub-node">处理链条 (Chains)</text>
+    
+    <!-- 输入分类链 -->
+    <rect x="50" y="260" width="180" height="35" class="chain-box"/>
+    <text x="140" y="282" text-anchor="middle" class="main-node">InputClassifierChain</text>
+    
+    <!-- 问题生成链 -->
+    <rect x="250" y="260" width="180" height="35" class="chain-box"/>
+    <text x="340" y="282" text-anchor="middle" class="main-node">QuestionGeneratorChain</text>
+    
+    <!-- 计划生成链 -->
+    <rect x="450" y="260" width="180" height="35" class="chain-box"/>
+    <text x="540" y="282" text-anchor="middle" class="main-node">PlanGeneratorChain</text>
+    
+    <!-- 计划调整链 -->
+    <rect x="650" y="260" width="180" height="35" class="chain-box"/>
+    <text x="740" y="282" text-anchor="middle" class="main-node">PlanAdjusterChain</text>
+    
+    <!-- 习惯处理链 -->
+    <rect x="850" y="260" width="180" height="35" class="chain-box"/>
+    <text x="940" y="282" text-anchor="middle" class="main-node">HabitProcessorChain</text>
+  </g>
+  
+  <!-- 基础链条类 -->
+  <rect x="450" y="320" width="300" height="40" class="config-box"/>
+  <text x="600" y="345" text-anchor="middle" class="main-node">BaseChain (基础链条类)</text>
+  
+  <!-- 配置层 -->
+  <g id="config">
+    <text x="100" y="400" class="sub-node">配置层 (Config)</text>
+    
+    <rect x="50" y="420" width="150" height="35" class="config-box"/>
+    <text x="125" y="442" text-anchor="middle" class="main-node">LLMConfig</text>
+    
+    <rect x="220" y="420" width="150" height="35" class="config-box"/>
+    <text x="295" y="442" text-anchor="middle" class="main-node">PromptLoader</text>
+  </g>
+  
+  <!-- Prompt模板层 -->
+  <g id="prompts">
+    <text x="500" y="400" class="sub-node">Prompt模板层</text>
+    
+    <rect x="450" y="420" width="120" height="30" class="prompt-box"/>
+    <text x="510" y="440" text-anchor="middle" class="detail-node">input_classifier.txt</text>
+    
+    <rect x="580" y="420" width="120" height="30" class="prompt-box"/>
+    <text x="640" y="440" text-anchor="middle" class="detail-node">question_generator.txt</text>
+    
+    <rect x="710" y="420" width="120" height="30" class="prompt-box"/>
+    <text x="770" y="440" text-anchor="middle" class="detail-node">plan_generator.txt</text>
+    
+    <rect x="840" y="420" width="120" height="30" class="prompt-box"/>
+    <text x="900" y="440" text-anchor="middle" class="detail-node">plan_adjuster.txt</text>
+    
+    <rect x="970" y="420" width="120" height="30" class="prompt-box"/>
+    <text x="1030" y="440" text-anchor="middle" class="detail-node">habit_processor.txt</text>
+  </g>
+  
+  <!-- 数据库层 -->
+  <g id="database">
+    <text x="100" y="520" class="sub-node">数据库层 (Models)</text>
+    
+    <rect x="50" y="540" width="100" height="30" class="service-box"/>
+    <text x="100" y="560" text-anchor="middle" class="detail-node">Task Model</text>
+    
+    <rect x="170" y="540" width="120" height="30" class="service-box"/>
+    <text x="230" y="560" text-anchor="middle" class="detail-node">Collection Model</text>
+  </g>
+  
+  <!-- API层 -->
+  <g id="api">
+    <text x="400" y="520" class="sub-node">API接口层</text>
+    
+    <rect x="350" y="540" width="120" height="30" class="service-box"/>
+    <text x="410" y="560" text-anchor="middle" class="detail-node">AI Controller</text>
+    
+    <rect x="490" y="540" width="100" height="30" class="service-box"/>
+    <text x="540" y="560" text-anchor="middle" class="detail-node">AI Routes</text>
+  </g>
+  
+  <!-- 处理流程 -->
+  <g id="process-flow">
+    <text x="700" y="520" class="sub-node">处理流程</text>
+    
+    <rect x="650" y="540" width="80" height="25" class="prompt-box"/>
+    <text x="690" y="557" text-anchor="middle" class="detail-node">1. 输入分类</text>
+    
+    <rect x="740" y="540" width="80" height="25" class="prompt-box"/>
+    <text x="780" y="557" text-anchor="middle" class="detail-node">2. 生成问题</text>
+    
+    <rect x="830" y="540" width="80" height="25" class="prompt-box"/>
+    <text x="870" y="557" text-anchor="middle" class="detail-node">3. 收集回答</text>
+    
+    <rect x="920" y="540" width="80" height="25" class="prompt-box"/>
+    <text x="960" y="557" text-anchor="middle" class="detail-node">4. 生成计划</text>
+    
+    <rect x="1010" y="540" width="80" height="25" class="prompt-box"/>
+    <text x="1050" y="557" text-anchor="middle" class="detail-node">5. 保存任务</text>
+  </g>
+  
+  <!-- 连接线 -->
+  <!-- 核心服务到链条 -->
+  <line x1="600" y1="120" x2="600" y2="260" class="flow-line"/>
+  
+  <!-- 链条到基础类 -->
+  <line x1="140" y1="295" x2="550" y2="320" class="connection-line"/>
+  <line x1="340" y1="295" x2="580" y2="320" class="connection-line"/>
+  <line x1="540" y1="295" x2="600" y2="320" class="connection-line"/>
+  <line x1="740" y1="295" x2="620" y2="320" class="connection-line"/>
+  <line x1="940" y1="295" x2="650" y2="320" class="connection-line"/>
+  
+  <!-- 基础类到配置 -->
+  <line x1="550" y1="360" x2="125" y2="420" class="connection-line"/>
+  <line x1="600" y1="360" x2="295" y2="420" class="connection-line"/>
+  
+  <!-- 基础类到Prompt -->
+  <line x1="600" y1="360" x2="510" y2="420" class="connection-line"/>
+  <line x1="600" y1="360" x2="640" y2="420" class="connection-line"/>
+  <line x1="600" y1="360" x2="770" y2="420" class="connection-line"/>
+  <line x1="600" y1="360" x2="900" y2="420" class="connection-line"/>
+  <line x1="600" y1="360" x2="1030" y2="420" class="connection-line"/>
+  
+  <!-- 服务到API -->
+  <line x1="550" y1="120" x2="410" y2="540" class="connection-line"/>
+  <line x1="600" y1="120" x2="540" y2="540" class="connection-line"/>
+  
+  <!-- 服务到数据库 -->
+  <line x1="500" y1="120" x2="100" y2="540" class="connection-line"/>
+  <line x1="520" y1="120" x2="230" y2="540" class="connection-line"/>
+  
+  <!-- 处理流程箭头 -->
+  <line x1="730" y1="552" x2="740" y2="552" class="flow-line"/>
+  <line x1="820" y1="552" x2="830" y2="552" class="flow-line"/>
+  <line x1="910" y1="552" x2="920" y2="552" class="flow-line"/>
+  <line x1="1000" y1="552" x2="1010" y2="552" class="flow-line"/>
+  
+  <!-- 特性说明 -->
+  <g id="features">
+    <text x="100" y="640" class="sub-node">架构特点</text>
+    
+    <text x="50" y="665" class="detail-node">• 模块化设计：每个链条负责特定功能</text>
+    <text x="50" y="685" class="detail-node">• 可扩展性：易于添加新的处理链条</text>
+    <text x="50" y="705" class="detail-node">• 统一接口：BaseChain提供统一的LLM调用</text>
+    <text x="50" y="725" class="detail-node">• 配置分离：Prompt模板与代码分离</text>
+    
+    <text x="500" y="665" class="detail-node">• 流程清晰：输入→分类→问答→计划→保存</text>
+    <text x="500" y="685" class="detail-node">• 错误处理：每个环节都有降级策略</text>
+    <text x="500" y="705" class="detail-node">• 测试友好：支持Mock模式</text>
+    <text x="500" y="725" class="detail-node">• 数据持久化：与MongoDB集成</text>
+  </g>
+  
+  <!-- 优化建议 -->
+  <g id="optimization">
+    <text x="100" y="770" class="sub-node" fill="#e74c3c">本次优化：问题生成更简洁友好</text>
+    <text x="500" y="770" class="detail-node" fill="#27ae60">✓ 问题长度控制在20字以内</text>
+    <text x="750" y="770" class="detail-node" fill="#27ae60">✓ 语气更像朋友聊天</text>
+  </g>
+</svg>

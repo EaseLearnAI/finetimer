@@ -1,0 +1,52 @@
+{
+  "mcpServers": {
+    "mongodb": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-mongo-server",
+        "mongodb://localhost:27017/aisiri?authSource=admin"
+      ],
+      "description": "MongoDB数据库访问服务，支持任务和任务集的查询、创建、更新操作",
+      "capabilities": [
+        "query",
+        "aggregate", 
+        "insert",
+        "update",
+        "count",
+        "listCollections"
+      ],
+      "collections": [
+        {
+          "name": "tasks",
+          "description": "用户任务表，包含任务标题、时间、优先级等信息"
+        },
+        {
+          "name": "collections", 
+          "description": "任务集表，用于组织和管理相关任务"
+        },
+        {
+          "name": "users",
+          "description": "用户信息表"
+        },
+        {
+          "name": "pomodoros",
+          "description": "番茄钟记录表"
+        }
+      ]
+    },
+    "time-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@yokingma/time-mcp",
+        "--key",
+        "c6b2f9b8-e897-4633-8f68-5b6d77ca2e4e"
+      ],
+      "description": "提供当前时间/时区/时间计算的MCP服务，用于实时时间调度"
+    }
+  }
+}
+

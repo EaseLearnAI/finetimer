@@ -34,26 +34,7 @@
         </div>
       </div>
       
-      <!-- 未指定时间的任务框 -->
-      <div v-if="unscheduledTasks && unscheduledTasks.length > 0" class="unscheduled-tasks">
-        <div class="unscheduled-header">
-          <div class="unscheduled-label">
-            未安排时间
-            <font-awesome-icon icon="inbox" class="inbox-icon" />
-          </div>
-          <div class="unscheduled-count">{{ unscheduledTasks.length }}</div>
-        </div>
-        
-        <div class="unscheduled-content">
-          <TaskItem
-            v-for="task in unscheduledTasks"
-            :key="task.id"
-            :task="task"
-            @click="$emit('task-click', task)"
-            @toggle="$emit('task-toggle', task)"
-          />
-        </div>
-      </div>
+      <!-- 未指定时间的任务已迁移到"其他"任务集中 -->
     </div>
   </div>
 </template>
@@ -70,10 +51,6 @@ export default {
     timeBlocks: {
       type: Array,
       required: true
-    },
-    unscheduledTasks: {
-      type: Array,
-      default: () => []
     }
   },
   emits: ['task-click', 'task-toggle', 'toggle-collapse'],
@@ -168,64 +145,14 @@ export default {
   opacity: 0.5;
 }
 
-/* 未指定时间的任务框样式 */
-.unscheduled-tasks {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 16px;
-  margin-bottom: 16px;
-}
-
-.unscheduled-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f2f2f7;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.unscheduled-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #8e8e93;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.inbox-icon {
-  font-size: 14px;
-}
-
-.unscheduled-count {
-  font-size: 12px;
-  color: #8e8e93;
-  background: #f2f2f7;
-  padding: 2px 8px;
-  border-radius: 8px;
-}
-
-.unscheduled-content {
-  padding: 8px 16px;
-}
-
-.unscheduled-content .task-item {
-  margin-bottom: 8px;
-}
-
-.unscheduled-content .task-item:last-child {
-  margin-bottom: 0;
-}
+/* 未指定时间的任务样式已移除，任务已迁移到"其他"任务集 */
 
 /* 隐藏滚动条 */
-.time-blocks::-webkit-scrollbar,
-.unscheduled-tasks::-webkit-scrollbar {
+.time-blocks::-webkit-scrollbar {
   display: none;
 }
 
-.time-blocks,
-.unscheduled-tasks {
+.time-blocks {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -252,9 +179,6 @@ export default {
     padding: 10px 16px 16px;
   }
   
-  .unscheduled-tasks {
-    margin-top: 12px;
-    margin-bottom: 70px; /* 为底部导航栏留出空间 */
-  }
+
 }
 </style>

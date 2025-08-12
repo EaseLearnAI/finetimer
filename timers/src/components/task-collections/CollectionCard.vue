@@ -1,14 +1,17 @@
 <template>
   <div class="collection-card">
-    <div class="collection-header" @click="toggleExpand">
+    <div class="collection-header" @click="toggleExpansion">
       <div class="collection-info">
         <div class="collection-name">{{ collection.name }}</div>
         <div class="collection-meta">
-          <span>{{ subtaskCountText }}</span>
+          <span>{{ collection.subtasks?.length || 0 }}个子任务</span>
           <div class="collection-progress">
-            <span>{{ progress }}%</span>
+            <span>{{ progressPercentage }}%</span>
             <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+              <div 
+                class="progress-fill" 
+                :style="{ width: progressPercentage + '%' }"
+              ></div>
             </div>
           </div>
         </div>
@@ -16,64 +19,49 @@
       <div class="collection-actions">
         <button 
           class="add-subtask-btn" 
-          @click.stop="openAddSubtaskModal"
+          @click.stop="$emit('add-subtask', collection._id)"
           title="添加子任务"
         >
           <font-awesome-icon icon="plus" />
         </button>
         <button 
-          class="expand-btn" 
-          :class="{ expanded: collection.expanded }" 
-          @click.stop="toggleExpand"
-        > 
-          <font-awesome-icon icon="chevron-down" /> 
+          class="expand-btn"
+          :class="{ expanded: isExpanded }"
+        >
+          <font-awesome-icon icon="chevron-down" />
         </button>
       </div>
     </div>
     
-    <div class="subtasks" :class="{ expanded: collection.expanded }">
-      <div 
-        v-for="subtask in collection.subtasks" 
-        :key="subtask.id"
-        class="subtask-item"
-      >
-        <div 
-          class="subtask-checkbox"
-          :class="{ completed: subtask.completed }"
-          @click="toggleSubtask(subtask)"
-        >
-          <font-awesome-icon icon="check" v-if="subtask.completed" />
-        </div>
-        <div class="subtask-content">
-          <div class="subtask-name">{{ subtask.name }}</div>
-          <div class="subtask-time">{{ subtask.time }}</div>
-        </div>
-        <div 
-          class="subtask-priority"
-          :class="`priority-${subtask.priority}`"
-        >
-          {{ getPriorityText(subtask.priority) }}
-        </div>
+    <div 
+      class="subtasks" 
+      :class="{ expanded: isExpanded }"
+      :style="{ maxHeight: isExpanded ? (collection.subtasks?.length * 70 + 20) + 'px' : '0px' }"
+    >
+      <template v-if="collection.subtasks && collection.subtasks.length > 0">
+        <SubtaskItem
+          v-for="subtask in collection.subtasks"
+          :key="subtask._id"
+          :subtask="subtask"
+          @toggle-subtask="$emit('toggle-subtask', $event)"
+        />
+      </template>
+      <div v-else class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">暂无子任务</div>
+        <div class="empty-subtitle">点击上方 + 按钮添加第一个子任务</div>
       </div>
     </div>
-
-    <!-- 添加子任务模态框 -->
-    <AddTaskModal
-      :visible="showAddSubtaskModal"
-      @close="closeAddSubtaskModal"
-      @submit="handleAddSubtask"
-    />
   </div>
 </template>
 
 <script>
-import AddTaskModal from '@/components/task/AddTaskModal.vue'
-import api from '@/api'
+import SubtaskItem from './SubtaskItem.vue'
 
 export default {
   name: 'CollectionCard',
   components: {
-    AddTaskModal
+    SubtaskItem
   },
   props: {
     collection: {
@@ -81,105 +69,25 @@ export default {
       required: true
     }
   },
+  emits: ['toggle-expansion', 'add-subtask', 'toggle-subtask'],
   data() {
     return {
-      showAddSubtaskModal: false
+      isExpanded: false
     }
   },
   computed: {
-    subtaskCountText() {
-      const count = this.collection.subtasks?.length || 0
-      return `${count}个子任务`
-    },
-    progress() {
-      if (!this.collection.subtasks?.length) return 0
-      const completed = this.collection.subtasks.filter(s => s.completed).length
-      return Math.round((completed / this.collection.subtasks.length) * 100)
+    progressPercentage() {
+      if (!this.collection.subtasks || this.collection.subtasks.length === 0) {
+        return 0;
+      }
+      const completed = this.collection.subtasks.filter(subtask => subtask.completed).length;
+      return Math.round((completed / this.collection.subtasks.length) * 100);
     }
   },
   methods: {
-    toggleExpand() {
-      this.$emit('toggle-expand', this.collection.id)
-    },
-    toggleSubtask(subtask) {
-      this.$emit('toggle-subtask', {
-        collectionId: this.collection.id,
-        subtaskId: subtask.id
-      })
-    },
-    getPriorityText(priority) {
-      const map = {
-        high: '高',
-        medium: '中',
-        low: '低'
-      }
-      return map[priority] || priority
-    },
-    openAddSubtaskModal() {
-      this.showAddSubtaskModal = true
-    },
-    closeAddSubtaskModal() {
-      this.showAddSubtaskModal = false
-    },
-    async handleAddSubtask(taskData) {
-      try {
-        console.log('开始添加子任务:', taskData)
-        // 首先创建任务
-        const taskResponse = await api.tasks.createTask({
-          title: taskData.title,
-          description: taskData.description || '',
-          dueDate: taskData.date || null,
-          quadrant: this.getQuadrantFromPriority(taskData.priority),
-          completed: false
-        })
-        
-        console.log('任务创建成功:', taskResponse)
-        
-        // 然后将任务添加到任务集中
-        const updatedTasks = [...(this.collection.subtasks || []).map(t => t.id || t._id), taskResponse.data._id]
-        const collectionResponse = await api.collections.updateCollection(this.collection.id, {
-          tasks: updatedTasks
-        })
-        
-        console.log('任务集更新成功:', collectionResponse)
-        
-        // 更新本地数据
-        this.$emit('add-subtask', {
-          collectionId: this.collection.id,
-          subtask: {
-            ...taskResponse.data,
-            id: taskResponse.data._id,
-            name: taskResponse.data.title,
-            time: taskResponse.data.dueDate ? new Date(taskResponse.data.dueDate).toLocaleDateString() : '待定',
-            priority: this.getPriorityFromQuadrant(taskResponse.data.quadrant),
-            completed: taskResponse.data.completed
-          }
-        })
-        
-        this.closeAddSubtaskModal()
-        this.$message.success('任务添加成功')
-      } catch (error) {
-        console.error('添加子任务失败:', error)
-        this.$message.error('任务添加失败: ' + (error.response?.data?.message || error.message))
-      }
-    },
-    getPriorityFromQuadrant(quadrant) {
-      // 将四象限转换为优先级
-      const quadrantMap = {
-        1: 'high',    // 重要且紧急
-        2: 'medium',  // 重要不紧急
-        3: 'low',     // 紧急不重要
-        4: 'low'      // 不重要不紧急
-      }
-      return quadrantMap[quadrant] || 'medium'
-    },
-    getQuadrantFromPriority(priority) {
-      const quadrantMap = {
-        'high': 1,
-        'medium': 2, 
-        'low': 3
-      }
-      return quadrantMap[priority] || 2
+    toggleExpansion() {
+      this.isExpanded = !this.isExpanded;
+      this.$emit('toggle-expansion', this.collection._id, this.isExpanded);
     }
   }
 }
@@ -255,6 +163,27 @@ export default {
   gap: 8px;
 }
 
+.add-subtask-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #4a90e2, #007aff);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}
+
+.add-subtask-btn:hover {
+  transform: translateY(-1px) scale(1.1);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
 .expand-btn {
   width: 32px;
   height: 32px;
@@ -278,32 +207,6 @@ export default {
   transform: rotate(180deg);
 }
 
-.expand-btn.expanded:hover {
-  transform: rotate(180deg) scale(1.1);
-}
-
-.add-subtask-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #4a90e2, #007aff);
-  color: white;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 14px;
-  margin-left: 8px;
-  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
-}
-
-.add-subtask-btn:hover {
-  transform: translateY(-1px) scale(1.1);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
-}
-
 .subtasks {
   max-height: 0;
   overflow: hidden;
@@ -314,106 +217,27 @@ export default {
   max-height: 500px;
 }
 
-.subtask-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 0;
-  border-bottom: 0.5px solid #f2f2f7;
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #8e8e93;
 }
 
-.subtask-item:last-child {
-  border-bottom: none;
+.empty-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  color: #d1d1d6;
 }
 
-.subtask-checkbox {
-  width: 22px;
-  height: 22px;
-  border-radius: 11px;
-  border: 2px solid #007aff;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  flex-shrink: 0;
-}
-
-.subtask-checkbox.completed {
-  background: linear-gradient(135deg, #4a90e2, #007aff);
-  border-color: transparent;
-  transform: scale(1.1);
-}
-
-.subtask-checkbox:hover {
-  transform: scale(1.05);
-}
-
-.subtask-content {
-  flex: 1;
-}
-
-.subtask-name {
+.empty-title {
   font-size: 16px;
-  font-weight: 500;
-  color: #1d1d1f;
-  margin-bottom: 2px;
-}
-
-.subtask-time {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.subtask-priority {
-  padding: 6px 10px;
-  border-radius: 12px;
-  font-size: 11px;
   font-weight: 600;
-  flex-shrink: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #1d1d1f;
+  margin-bottom: 6px;
 }
 
-.priority-high {
-  background: #ffebee;
-  color: #c62828;
-}
-
-.priority-medium {
-  background: #fff3e0;
-  color: #f57c00;
-}
-
-.priority-low {
-  background: #e8f5e9;
-  color: #2e7d32;
-}
-
-/* 移动端适配 */
-@media (max-width: 430px) {
-  .collection-card {
-    margin-bottom: 12px;
-    padding: 16px 20px;
-  }
-  
-  .collection-name {
-    font-size: 18px;
-  }
-  
-  .collection-meta {
-    font-size: 13px;
-  }
-  
-  .subtask-name {
-    font-size: 15px;
-  }
-  
-  .subtask-time {
-    font-size: 13px;
-  }
+.empty-subtitle {
+  font-size: 14px;
+  color: #8e8e93;
 }
 </style>

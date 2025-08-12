@@ -27,7 +27,8 @@ class PlanAdjusterChain extends BaseChain {
       // 调用LLM
       const response = await this.callLLM(prompt, {
         temperature: 0.7,
-        max_tokens: 2000
+        max_tokens: 2000,
+        mock_type: 'adjust'
       });
 
       // 解析JSON响应
@@ -191,7 +192,8 @@ class PlanAdjusterChain extends BaseChain {
 
       const response = await this.callLLM(prompt, {
         temperature: 0.8,
-        max_tokens: 500
+        max_tokens: 500,
+        mock_type: 'adjust'
       });
 
       const result = await this.parseJSONResponse(response);
