@@ -1,0 +1,326 @@
+[00:26:22.948] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"CONVERSATION\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户输入为常见的问候语，没有涉及任务创建、时间调度或外部工具调用的内容。\",\n  \"extracted_info\": {\n    \"keywords\": [\"你好\"],\n    \"entities\": {}\n  }\n}..."
+}
+[00:26:22.948] info: 意图识别结果解析成功 {"intent":"CONVERSATION","confidence":0.95,"hasExtractedInfo":true}
+[00:26:22.948] info: 意图识别完成 {"intent":"CONVERSATION","confidence":0.95,"processingTime":"1818ms","success":true}
+[00:26:22.948] info: 智能调度服务状态查询完成 {"status":"healthy","processingTime":1818}
+info: ::1 - - [19/Aug/2025:16:26:22 +0000] "GET /api/aisiri/dispatch/status HTTP/1.1" 200 390 "http://localhost:8080/ai-secretary" "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1" {"service":"aisiri-backend","timestamp":"2025-08-19T16:26:22.949Z"}
+info: [JWT认证] 认证成功，耗时: 15ms, userId: 68a21bf0cdab688c24714231, URL: /api/aisiri/dispatch {"service":"aisiri-backend","timestamp":"2025-08-19T16:33:44.064Z"}
+info: [JWT认证] 认证成功，耗时: 1ms, userId: 68a21bf0cdab688c24714231, URL: /api/aisiri/dispatch {"service":"aisiri-backend","timestamp":"2025-08-19T16:33:44.068Z"}
+info: [JWT认证] 认证成功，耗时: 1ms, userId: 68a21bf0cdab688c24714231, URL: /api/aisiri/dispatch {"service":"aisiri-backend","timestamp":"2025-08-19T16:33:44.070Z"}
+[00:33:44.071] info: 智能调度请求 {"url":"/api/aisiri/dispatch","userId":"68a21bf0cdab688c24714231","ip":"::1"}
+[00:33:44.071] info: 收到智能调度请求
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "userInput": "我今天好累呀，但是我明天还要打个电话给我妈",
+  "sessionId": "session_1755620488697_8nt8o1v6a",
+  "deviceInfo": {
+    "platform": "web",
+    "version": "2.0.0"
+  }
+}
+[00:33:44.071] info: 开始智能调度处理
+  {
+  "requestId": "dispatch-1755621224071-k0tn72mss",
+  "userInput": "我今天好累呀，但是我明天还要打个电话给我妈",
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "session_1755620488697_8nt8o1v6a",
+  "inputLength": 21
+}
+[00:33:44.071] info: 步骤1: 执行意图识别 {"requestId":"dispatch-1755621224071-k0tn72mss"}
+[00:33:44.072] info: 开始意图识别 {"userInput":"我今天好累呀，但是我明天还要打个电话给我妈","inputLength":21}
+[00:33:44.072] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":381}
+[00:33:44.073] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[00:33:46.343] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 477,
+    "completion_tokens": 103,
+    "total_tokens": 580,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[00:33:46.343] info: 收到模型响应 {"responseLength":255,"responseTime":"2272ms"}
+[00:33:46.344] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"CONVERSATION\",\n  \"confidence\": 0.9,\n  \"reasoning\": \"用户主要表达情绪状态（好累），并提及未来的计划（打电话给我妈），但主要意图是交流情感，而非新增任务或安排时间。\",\n  \"extracted_info\": {\n    \"keywords\": [\"累\", \"打电话\", \"明天\"],\n    \"entities\": {..."
+}
+[00:33:46.344] info: 意图识别结果解析成功 {"intent":"CONVERSATION","confidence":0.9,"hasExtractedInfo":true}
+[00:33:46.344] info: 意图识别完成 {"intent":"CONVERSATION","confidence":0.9,"processingTime":"2273ms","success":true}
+[00:33:46.344] info: 意图识别完成 {"requestId":"dispatch-1755621224071-k0tn72mss","intent":"CONVERSATION","confidence":0.9}
+[00:33:46.344] info: 步骤2: 分析多重意图 {"requestId":"dispatch-1755621224071-k0tn72mss"}
+[00:33:46.345] info: Action Router 分析完成
+  {
+  "userInput": "我今天好累呀，但是我明天还要打个电话给我妈",
+  "actionPlan": [
+    {
+      "intent": "TASK_CREATION",
+      "priority": 1
+    },
+    {
+      "intent": "CONVERSATION",
+      "priority": 3
+    }
+  ],
+  "totalActions": 2
+}
+[00:33:46.346] info: 多重意图分析完成
+  {
+  "requestId": "dispatch-1755621224071-k0tn72mss",
+  "intents": [
+    "TASK_CREATION",
+    "CONVERSATION"
+  ],
+  "count": 2
+}
+[00:33:46.346] info: 步骤3: 执行相应的服务 {"requestId":"dispatch-1755621224071-k0tn72mss"}
+[00:33:46.346] info: 执行优先级 1 的服务 {"intents":["TASK_CREATION"],"count":1}
+[00:33:46.346] info: 开始执行任务创建
+  {
+  "userInput": "我今天好累呀，但是我明天还要打个电话给我妈",
+  "timeInfo": {
+    "date": "2025-08-20",
+    "timeBlock": null,
+    "specificTime": null
+  },
+  "userId": "68a21bf0cdab688c24714231"
+}
+[00:33:46.347] info: 开始任务识别和存储 {"userInput":"我今天好累呀，但是我明天还要打个电话给我妈","userId":"68a21bf0cdab688c24714231"}
+[00:33:46.347] info: 开始意图识别 {"userInput":"我今天好累呀，但是我明天还要打个电话给我妈","inputLength":21}
+[00:33:46.347] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":381}
+[00:33:46.347] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[00:33:48.455] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 477,
+    "completion_tokens": 105,
+    "total_tokens": 582,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[00:33:48.455] info: 收到模型响应 {"responseLength":273,"responseTime":"2108ms"}
+[00:33:48.456] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"CONVERSATION\",\n  \"confidence\": 0.9,\n  \"reasoning\": \"用户主要表达情绪状态（好累），并提及一个简单的未来行动（打电话给我妈），但重点在于情感表达而非任务创建或时间安排。\",\n  \"extracted_info\": {\n    \"keywords\": [\"累\", \"打电话\"],\n    \"entities\": {\n   ..."
+}
+[00:33:48.456] info: 意图识别结果解析成功 {"intent":"CONVERSATION","confidence":0.9,"hasExtractedInfo":true}
+[00:33:48.456] info: 意图识别完成 {"intent":"CONVERSATION","confidence":0.9,"processingTime":"2109ms","success":true}
+[00:33:48.456] info: 意图识别完成 {"intent":"CONVERSATION","confidence":0.9}
+[00:33:48.456] info: 非任务创建意图，跳过任务存储 {"intent":"CONVERSATION"}
+[00:33:48.456] info: 任务创建完成 {"success":true}
+[00:33:48.456] info: 优先级 1 的服务执行完成 {"results":["taskCreation"]}
+[00:33:48.456] info: 执行优先级 3 的服务 {"intents":["CONVERSATION"],"count":1}
+[00:33:48.456] info: 开始执行对话处理
+  {
+  "userInput": "我今天好累呀，但是我明天还要打个电话给我妈",
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "session_1755620488697_8nt8o1v6a",
+  "hasPreviousResults": true
+}
+[00:33:48.457] info: 开始处理对话
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "session_1755620488697_8nt8o1v6a",
+  "messageLength": 21
+}
+[00:33:48.457] info: 开始意图识别 我今天好累呀，但是我明天还要打个电话给我妈... {"userId":"68a21bf0cdab688c24714231"}
+[00:33:48.457] info: 开始意图识别 {"userInput":"我今天好累呀，但是我明天还要打个电话给我妈","inputLength":21}
+[00:33:48.457] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":381}
+[00:33:48.457] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[00:33:51.118] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 477,
+    "completion_tokens": 127,
+    "total_tokens": 604,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[00:33:51.118] info: 收到模型响应 {"responseLength":301,"responseTime":"2661ms"}
+[00:33:51.118] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"CONVERSATION\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户表达了情绪（‘我今天好累呀’）并提到了一个未来的行动（‘我明天还要打个电话给我妈’），但主要意图是分享状态和情感，而不是明确的任务创建、时间安排或外部工具调用。\",\n  \"extracted_info\": {\n    \"keywords\": [\"累\", \"打电..."
+}
+[00:33:51.119] info: 意图识别结果解析成功 {"intent":"CONVERSATION","confidence":0.95,"hasExtractedInfo":true}
+[00:33:51.119] info: 意图识别完成 {"intent":"CONVERSATION","confidence":0.95,"processingTime":"2662ms","success":true}
+[00:33:51.128] info: 用户消息已保存 {"messageId":"68a4a76f7561b1a886bce696","intent":"CONVERSATION","confidence":0.95}
+[00:33:51.134] info: 检测到用户情绪 {"userId":"68a21bf0cdab688c24714231","emotion":"tired","keywords":["累","打电话"]}
+[00:33:51.138] info: 开始生成AI回应 {"userId":"68a21bf0cdab688c24714231","historyCount":5}
+[00:33:51.138] info: 调用通义千问API生成回应
+  {
+  "model": "qwen-plus",
+  "messagesCount": 2,
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+}
+[00:33:52.889] info: AI回应生成成功
+  {
+  "status": 200,
+  "responseTime": "1751ms",
+  "usage": {
+    "prompt_tokens": 769,
+    "completion_tokens": 59,
+    "total_tokens": 828,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[00:33:52.895] info: 对话处理完成
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "session_1755620488697_8nt8o1v6a",
+  "userMessageId": "68a4a76f7561b1a886bce696",
+  "assistantMessageId": "68a4a7707561b1a886bce699",
+  "totalTime": "4437ms",
+  "emotion": "tired",
+  "intent": "CONVERSATION"
+}
+[00:33:52.895] info: 对话处理完成 {"success":true}
+[00:33:52.896] info: 优先级 3 的服务执行完成 {"results":["taskCreation","conversation"]}
+[00:33:52.896] info: 服务执行完成
+  {
+  "requestId": "dispatch-1755621224071-k0tn72mss",
+  "servicesExecuted": [
+    "taskCreation",
+    "conversation"
+  ],
+  "successCount": 2
+}
+[00:33:52.896] info: 步骤4: 生成统一回复 {"requestId":"dispatch-1755621224071-k0tn72mss"}
+[00:33:52.897] info: 开始生成统一回复
+  {
+  "userInput": "我今天好累呀，但是我明天还要打个电话给我妈",
+  "intentsCount": 2,
+  "executionResultsKeys": [
+    "taskCreation",
+    "conversation"
+  ],
+  "executionResults": {
+    "taskCreation": {
+      "success": true,
+      "message": "输入不是任务创建意图，无需存储",
+      "intentResult": {
+        "intent": "CONVERSATION",
+        "confidence": 0.9,
+        "reasoning": "用户主要表达情绪状态（好累），并提及一个简单的未来行动（打电话给我妈），但重点在于情感表达而非任务创建或时间安排。",
+        "extracted_info": {
+          "keywords": [
+            "累",
+            "打电话"
+          ],
+          "entities": {
+            "time": "明天",
+            "location": "",
+            "task": "打电话给我妈"
+          }
+        },
+        "original_input": "我今天好累呀，但是我明天还要打个电话给我妈",
+        "timestamp": "2025-08-19T16:33:48.456Z",
+        "intent_description": "正常对话（情绪安慰、聊天）"
+      }
+    },
+    "conversation": {
+      "success": true,
+      "data": {
+        "sessionId": "session_1755620488697_8nt8o1v6a",
+        "userMessage": {
+          "id": "68a4a76f7561b1a886bce696",
+          "content": "我今天好累呀，但是我明天还要打个电话给我妈",
+          "timestamp": "2025-08-19T16:33:51.122Z",
+          "intent": "CONVERSATION",
+          "confidence": 0.95
+        },
+        "assistantMessage": {
+          "id": "68a4a7707561b1a886bce699",
+          "content": "小艾能感受到你今天的疲惫呢 🌙 但你明天还要给妈妈打电话，是有什么特别的事情想说吗？如果现在不想聊的话，也可以先好好休息，把能量攒到明天再处理也不迟哦～要记得照顾好自己呀 🌿",
+          "timestamp": "2025-08-19T16:33:52.892Z",
+          "emotion": "tired"
+        },
+        "metadata": {
+          "processingTime": 4437,
+          "intentInfo": {
+            "intent": "CONVERSATION",
+            "confidence": 0.95,
+            "reasoning": "用户表达了情绪（‘我今天好累呀’）并提到了一个未来的行动（‘我明天还要打个电话给我妈’），但主要意图是分享状态和情感，而不是明确的任务创建、时间安排或外部工具调用。"
+          },
+          "conversationStats": {
+            "historyCount": 5,
+            "emotion": "tired"
+          }
+        }
+      }
+    }
+  }
+}
+[00:33:52.897] info: 调用通义千问API生成回应
+  {
+  "model": "qwen-plus",
+  "messagesCount": 2,
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+}
+[00:33:53.853] info: AI回应生成成功
+  {
+  "status": 200,
+  "responseTime": "956ms",
+  "usage": {
+    "prompt_tokens": 285,
+    "completion_tokens": 47,
+    "total_tokens": 332,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[00:33:53.853] info: 回复生成完成 {"requestId":"dispatch-1755621224071-k0tn72mss","responseLength":76}
+[00:33:53.853] info: 智能调度处理完成
+  {
+  "requestId": "dispatch-1755621224071-k0tn72mss",
+  "userId": "68a21bf0cdab688c24714231",
+  "processingTime": "9782ms",
+  "responseLength": 76,
+  "servicesExecuted": [
+    "taskCreation",
+    "conversation"
+  ]
+}
+[00:33:53.853] info: 智能调度处理完成
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "processingTime": 9782,
+  "responseLength": 76,
+  "servicesExecuted": [
+    "taskCreation",
+    "conversation"
+  ]
+}
+info: ::1 - - [19/Aug/2025:16:33:53 +0000] "POST /api/aisiri/dispatch HTTP/1.1" 200 516 "http://localhost:8080/ai-secretary" "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1" {"service":"aisiri-backend","timestamp":"2025-08-19T16:33:53.854Z"}

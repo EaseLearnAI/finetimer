@@ -1,0 +1,339 @@
+}
+[04:27:44.172] info: 意图识别结果解析成功 {"intent":"CONVERSATION","confidence":0.95,"hasExtractedInfo":true}
+[04:27:44.172] info: 意图识别完成 {"intent":"CONVERSATION","confidence":0.95,"processingTime":"4473ms","success":true}
+[04:27:44.172] info: 意图识别完成 {"requestId":"dispatch-1755635259699-walk996gy","intent":"CONVERSATION","confidence":0.95}
+[04:27:44.172] info: 步骤2: 分析多重意图 {"requestId":"dispatch-1755635259699-walk996gy"}
+[04:27:44.174] info: Action Router 分析完成
+  {
+  "userInput": "我压力好大，明天还有个重要的考试。",
+  "actionPlan": [
+    {
+      "intent": "TASK_CREATION",
+      "priority": 1
+    },
+    {
+      "intent": "CONVERSATION",
+      "priority": 3
+    }
+  ],
+  "totalActions": 2
+}
+[04:27:44.174] info: 多重意图分析完成
+  {
+  "requestId": "dispatch-1755635259699-walk996gy",
+  "intents": [
+    "TASK_CREATION",
+    "CONVERSATION"
+  ],
+  "count": 2
+}
+[04:27:44.174] info: 步骤3: 执行相应的服务 {"requestId":"dispatch-1755635259699-walk996gy"}
+[04:27:44.175] info: 执行优先级 1 的服务 {"intents":["TASK_CREATION"],"count":1}
+[04:27:44.175] info: 开始执行任务创建
+  {
+  "userInput": "我压力好大，明天还有个重要的考试。",
+  "timeInfo": {
+    "date": "2025-08-20",
+    "timeBlock": null,
+    "specificTime": null
+  },
+  "userId": "68a21bf0cdab688c24714231"
+}
+[04:27:44.175] info: 开始直接创建任务
+  {
+  "userInput": "我压力好大，明天还有个重要的考试。",
+  "userId": "68a21bf0cdab688c24714231",
+  "timeInfo": {
+    "date": "2025-08-20",
+    "timeBlock": null,
+    "specificTime": null
+  }
+}
+[04:27:44.175] info: 开始意图识别 {"userInput":"我压力好大，明天还有个重要的考试。","inputLength":17}
+[04:27:44.175] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":377}
+[04:27:44.175] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[04:27:46.005] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 474,
+    "completion_tokens": 105,
+    "total_tokens": 579,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[04:27:46.005] info: 收到模型响应 {"responseLength":272,"responseTime":"1830ms"}
+[04:27:46.005] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"CONVERSATION\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户表达了情绪压力，并提到了明天的重要考试，这属于情绪倾诉和日常对话范畴，没有明确的任务创建、时间调度或外部工具调用意图。\",\n  \"extracted_info\": {\n    \"keywords\": [\"压力\", \"考试\"],\n    \"entities\": ..."
+}
+[04:27:46.006] info: 意图识别结果解析成功 {"intent":"CONVERSATION","confidence":0.95,"hasExtractedInfo":true}
+[04:27:46.006] info: 意图识别完成 {"intent":"CONVERSATION","confidence":0.95,"processingTime":"1831ms","success":true}
+[04:27:46.006] info: 意图识别完成（用于信息提取） {"intent":"CONVERSATION","confidence":0.95}
+[04:27:46.006] info: 强制设置为任务创建意图 {"intent":"TASK_CREATION","confidence":0.95}
+[04:27:46.006] info: 提取任务信息完成
+  {
+  "title": "我压力好大，明天还有个重要的考试。",
+  "timeBlock": {
+    "startTime": "14:00",
+    "endTime": "18:00",
+    "timeBlockType": "afternoon"
+  },
+  "targetDate": "2025-08-20",
+  "timeInfoInput": {
+    "date": "2025-08-20",
+    "timeBlock": null,
+    "specificTime": null
+  }
+}
+[04:27:46.006] info: 提取任务信息完成
+  {
+  "taskInfo": {
+    "title": "我压力好大，明天还有个重要的考试。",
+    "userId": "68a21bf0cdab688c24714231",
+    "timeBlock": {
+      "startTime": "14:00",
+      "endTime": "18:00",
+      "timeBlockType": "afternoon"
+    },
+    "targetDate": "2025-08-20"
+  }
+}
+[04:27:46.006] info: 开始存储任务到数据库
+  {
+  "taskInfo": {
+    "title": "我压力好大，明天还有个重要的考试。",
+    "userId": "68a21bf0cdab688c24714231",
+    "timeBlock": {
+      "startTime": "14:00",
+      "endTime": "18:00",
+      "timeBlockType": "afternoon"
+    },
+    "targetDate": "2025-08-20"
+  }
+}
+[04:27:46.011] info: 任务存储成功 {"taskId":"68a4de427ce84d4aca62245a"}
+[04:27:46.011] info: 任务直接创建成功 {"taskId":"68a4de427ce84d4aca62245a","title":"我压力好大，明天还有个重要的考试。","processingTime":"1836ms"}
+[04:27:46.012] info: 任务创建完成 {"success":true}
+[04:27:46.012] info: 优先级 1 的服务执行完成 {"results":["taskCreation"]}
+[04:27:46.012] info: 执行优先级 3 的服务 {"intents":["CONVERSATION"],"count":1}
+[04:27:46.012] info: 开始执行对话处理
+  {
+  "userInput": "我压力好大，明天还有个重要的考试。",
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "session_1755634525219_l43hna077",
+  "hasPreviousResults": true
+}
+[04:27:46.012] info: 开始处理对话
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "session_1755634525219_l43hna077",
+  "messageLength": 17
+}
+[04:27:46.012] info: 开始意图识别 我压力好大，明天还有个重要的考试。... {"userId":"68a21bf0cdab688c24714231"}
+[04:27:46.012] info: 开始意图识别 {"userInput":"我压力好大，明天还有个重要的考试。","inputLength":17}
+[04:27:46.012] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":377}
+[04:27:46.013] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[04:27:48.176] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 474,
+    "completion_tokens": 107,
+    "total_tokens": 581,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[04:27:48.177] info: 收到模型响应 {"responseLength":274,"responseTime":"2164ms"}
+[04:27:48.177] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"CONVERSATION\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户表达了情绪压力，并提到了明天的重要考试，这属于情绪倾诉和日常对话范畴，没有明确的任务创建、时间安排或外部工具调用意图。\",\n  \"extracted_info\": {\n    \"keywords\": [\"压力\", \"考试\"],\n    \"entities\": ..."
+}
+[04:27:48.177] info: 意图识别结果解析成功 {"intent":"CONVERSATION","confidence":0.95,"hasExtractedInfo":true}
+[04:27:48.177] info: 意图识别完成 {"intent":"CONVERSATION","confidence":0.95,"processingTime":"2165ms","success":true}
+[04:27:48.183] info: 用户消息已保存 {"messageId":"68a4de447ce84d4aca62245d","intent":"CONVERSATION","confidence":0.95}
+[04:27:48.198] info: 检测到用户情绪 {"userId":"68a21bf0cdab688c24714231","emotion":"stressed","keywords":["压力","考试"]}
+[04:27:48.201] info: 开始生成AI回应 {"userId":"68a21bf0cdab688c24714231","historyCount":3}
+[04:27:48.201] info: 调用通义千问API生成回应
+  {
+  "model": "qwen-plus",
+  "messagesCount": 2,
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+}
+[04:27:50.000] info: AI回应生成成功
+  {
+  "status": 200,
+  "responseTime": "1799ms",
+  "usage": {
+    "prompt_tokens": 660,
+    "completion_tokens": 71,
+    "total_tokens": 731,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[04:27:50.004] info: 对话处理完成
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "session_1755634525219_l43hna077",
+  "userMessageId": "68a4de447ce84d4aca62245d",
+  "assistantMessageId": "68a4de467ce84d4aca622460",
+  "totalTime": "3992ms",
+  "emotion": "stressed",
+  "intent": "CONVERSATION"
+}
+[04:27:50.004] info: 对话处理完成 {"success":true}
+[04:27:50.004] info: 优先级 3 的服务执行完成 {"results":["taskCreation","conversation"]}
+[04:27:50.005] info: 服务执行完成
+  {
+  "requestId": "dispatch-1755635259699-walk996gy",
+  "servicesExecuted": [
+    "taskCreation",
+    "conversation"
+  ],
+  "successCount": 2
+}
+[04:27:50.005] info: 步骤4: 生成统一回复 {"requestId":"dispatch-1755635259699-walk996gy"}
+[04:27:50.005] info: 开始生成统一回复
+  {
+  "userInput": "我压力好大，明天还有个重要的考试。",
+  "intentsCount": 2,
+  "executionResultsKeys": [
+    "taskCreation",
+    "conversation"
+  ],
+  "executionResults": {
+    "taskCreation": {
+      "success": true,
+      "message": "任务创建成功",
+      "task": {
+        "timeBlock": {
+          "startTime": "14:00",
+          "endTime": "18:00",
+          "timeBlockType": "afternoon"
+        },
+        "_id": "68a4de427ce84d4aca62245a",
+        "title": "我压力好大，明天还有个重要的考试。",
+        "description": "",
+        "priority": "medium",
+        "completed": false,
+        "userId": "68a21bf0cdab688c24714231",
+        "isScheduled": false,
+        "createdAt": "2025-08-19T20:27:46.007Z",
+        "updatedAt": "2025-08-19T20:27:46.007Z",
+        "__v": 0
+      },
+      "intentResult": {
+        "intent": "TASK_CREATION",
+        "confidence": 0.95,
+        "reasoning": "用户表达了情绪压力，并提到了明天的重要考试，这属于情绪倾诉和日常对话范畴，没有明确的任务创建、时间调度或外部工具调用意图。",
+        "extracted_info": {
+          "keywords": [
+            "压力",
+            "考试"
+          ],
+          "entities": {
+            "time": "明天",
+            "location": "",
+            "task": ""
+          }
+        },
+        "original_input": "我压力好大，明天还有个重要的考试。",
+        "timestamp": "2025-08-19T20:27:46.006Z",
+        "intent_description": "正常对话（情绪安慰、聊天）"
+      },
+      "processingTime": 1836
+    },
+    "conversation": {
+      "success": true,
+      "data": {
+        "sessionId": "session_1755634525219_l43hna077",
+        "userMessage": {
+          "id": "68a4de447ce84d4aca62245d",
+          "content": "我压力好大，明天还有个重要的考试。",
+          "timestamp": "2025-08-19T20:27:48.180Z",
+          "intent": "CONVERSATION",
+          "confidence": 0.95
+        },
+        "assistantMessage": {
+          "id": "68a4de467ce84d4aca622460",
+          "content": "别担心呀，我懂那种临考前紧张的感觉😔 重要的考试确实会让人压力山大呢。不过你已经准备这么久了，相信自己一定可以的！✨ 现在先深呼吸，我们一起想想办法~ 要不要聊聊具体是什么考试呀？或许我能帮你分担一些焦虑呢 🌟",
+          "timestamp": "2025-08-19T20:27:50.002Z",
+          "emotion": "stressed"
+        },
+        "metadata": {
+          "processingTime": 3992,
+          "intentInfo": {
+            "intent": "CONVERSATION",
+            "confidence": 0.95,
+            "reasoning": "用户表达了情绪压力，并提到了明天的重要考试，这属于情绪倾诉和日常对话范畴，没有明确的任务创建、时间安排或外部工具调用意图。"
+          },
+          "conversationStats": {
+            "historyCount": 3,
+            "emotion": "stressed"
+          }
+        }
+      }
+    }
+  }
+}
+[04:27:50.006] info: 调用通义千问API生成回应
+  {
+  "model": "qwen-plus",
+  "messagesCount": 2,
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+}
+[04:27:51.775] info: AI回应生成成功
+  {
+  "status": 200,
+  "responseTime": "1769ms",
+  "usage": {
+    "prompt_tokens": 292,
+    "completion_tokens": 62,
+    "total_tokens": 354,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[04:27:51.775] info: 回复生成完成 {"requestId":"dispatch-1755635259699-walk996gy","responseLength":100}
+[04:27:51.776] info: 智能调度处理完成
+  {
+  "requestId": "dispatch-1755635259699-walk996gy",
+  "userId": "68a21bf0cdab688c24714231",
+  "processingTime": "12077ms",
+  "responseLength": 100,
+  "servicesExecuted": [
+    "taskCreation",
+    "conversation"
+  ]
+}
+[04:27:51.776] info: 智能调度处理完成
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "processingTime": 12077,
+  "responseLength": 100,
+  "servicesExecuted": [
+    "taskCreation",
+    "conversation"
+  ]
+}

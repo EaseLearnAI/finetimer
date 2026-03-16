@@ -1,0 +1,956 @@
+
+   "CONVERSATION"
+  ],
+  "count": 2
+}
+[03:31:30.015] info: 步骤3: 执行相应的服务 {"requestId":"dispatch-1755631887922-48f8m50l0"}
+[03:31:30.015] info: 执行优先级 1 的服务 {"intents":["EXTERNAL_TOOL"],"count":1}
+[03:31:30.015] info: 开始执行外部工具调用 {"userInput":"我很开心，今天天气真好","toolType":"weather","userId":"68a21bf0cdab688c24714231"}
+[03:31:30.016] error: 外部工具调用失败
+  {
+  "error": "Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js",
+  "toolType": "weather",
+  "userInput": "我很开心，今天天气真好"
+}
+[03:31:30.016] info: 外部工具调用完成 {"success":false}
+[03:31:30.017] info: 优先级 1 的服务执行完成 {"results":["externalTool"]}
+[03:31:30.017] info: 执行优先级 3 的服务 {"intents":["CONVERSATION"],"count":1}
+[03:31:30.017] info: 开始执行对话处理
+  {
+  "userInput": "我很开心，今天天气真好",
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "test-session-emotion",
+  "hasPreviousResults": true
+}
+[03:31:30.017] info: 开始处理对话 {"userId":"68a21bf0cdab688c24714231","sessionId":"test-session-emotion","messageLength":11}
+[03:31:30.017] info: 开始意图识别 我很开心，今天天气真好... {"userId":"68a21bf0cdab688c24714231"}
+[03:31:30.017] info: 开始意图识别 {"userInput":"我很开心，今天天气真好","inputLength":11}
+[03:31:30.017] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":581}
+[03:31:30.017] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[03:31:33.380] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 590,
+    "completion_tokens": 104,
+    "total_tokens": 694,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:31:33.380] info: 收到模型响应 {"responseLength":269,"responseTime":"3363ms"}
+[03:31:33.380] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"CONVERSATION\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户表达了情绪（开心）并评论了天气，属于日常情感交流和闲聊内容，没有涉及任务创建、时间安排或需要调用外部工具的信息请求。\",\n  \"extracted_info\": {\n    \"keywords\": [\"开心\", \"天气\"],\n    \"entities\": {..."
+}
+[03:31:33.381] info: 意图识别结果解析成功 {"intent":"CONVERSATION","confidence":0.95,"hasExtractedInfo":true}
+[03:31:33.381] info: 意图识别完成 {"intent":"CONVERSATION","confidence":0.95,"processingTime":"3364ms","success":true}
+[03:31:33.384] info: 用户消息已保存 {"messageId":"68a4d115a667cc3fb0bead94","intent":"CONVERSATION","confidence":0.95}
+[03:31:33.387] info: 检测到用户情绪
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "emotion": "happy",
+  "keywords": [
+    "开心",
+    "天气"
+  ],
+  "hasWeatherInfo": false
+}
+[03:31:33.387] info: 开始生成AI回应 {"userId":"68a21bf0cdab688c24714231","historyCount":5}
+[03:31:33.387] info: 调用通义千问API生成回应
+  {
+  "model": "qwen-plus",
+  "messagesCount": 2,
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+}
+[03:31:36.959] info: AI回应生成成功
+  {
+  "status": 200,
+  "responseTime": "3572ms",
+  "usage": {
+    "prompt_tokens": 813,
+    "completion_tokens": 68,
+    "total_tokens": 881,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:31:36.963] info: 对话处理完成
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "test-session-emotion",
+  "userMessageId": "68a4d115a667cc3fb0bead94",
+  "assistantMessageId": "68a4d118a667cc3fb0bead97",
+  "totalTime": "6946ms",
+  "emotion": "happy",
+  "intent": "CONVERSATION"
+}
+[03:31:36.964] info: 对话处理完成 {"success":true}
+[03:31:36.964] info: 优先级 3 的服务执行完成 {"results":["externalTool","conversation"]}
+[03:31:36.964] info: 服务执行完成
+  {
+  "requestId": "dispatch-1755631887922-48f8m50l0",
+  "servicesExecuted": [
+    "externalTool",
+    "conversation"
+  ],
+  "successCount": 1
+}
+[03:31:36.964] info: 步骤4: 生成统一回复 {"requestId":"dispatch-1755631887922-48f8m50l0"}
+[03:31:36.964] info: 开始生成统一回复
+  {
+  "userInput": "我很开心，今天天气真好",
+  "intentsCount": 2,
+  "executionResultsKeys": [
+    "externalTool",
+    "conversation"
+  ],
+  "executionResults": {
+    "externalTool": {
+      "success": false,
+      "type": "weather",
+      "message": "外部工具调用失败: Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js",
+      "error": "Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js"
+    },
+    "conversation": {
+      "success": true,
+      "data": {
+        "sessionId": "test-session-emotion",
+        "userMessage": {
+          "id": "68a4d115a667cc3fb0bead94",
+          "content": "我很开心，今天天气真好",
+          "timestamp": "2025-08-19T19:31:33.382Z",
+          "intent": "CONVERSATION",
+          "confidence": 0.95
+        },
+        "assistantMessage": {
+          "id": "68a4d118a667cc3fb0bead97",
+          "content": "太好啦！阳光明媚的时候心情也特别容易变好呢☀️ 听到你开心我也超级开心！可以去公园散散步，或者约上朋友一起享受这美好的天气～如果有什么开心的事想和我分享，我随时都在哦！继续保持这份好心情，让阳光住进心里～🌼✨",
+          "timestamp": "2025-08-19T19:31:36.962Z",
+          "emotion": "happy"
+        },
+        "metadata": {
+          "processingTime": 6946,
+          "intentInfo": {
+            "intent": "CONVERSATION",
+            "confidence": 0.95,
+            "reasoning": "用户表达了情绪（开心）并评论了天气，属于日常情感交流和闲聊内容，没有涉及任务创建、时间安排或需要调用外部工具的信息请求。"
+          },
+          "conversationStats": {
+            "historyCount": 5,
+            "emotion": "happy"
+          }
+        }
+      },
+      "emotion": "happy",
+      "weather": null
+    }
+  }
+}
+[03:31:36.965] info: 调用通义千问API生成回应
+  {
+  "model": "qwen-plus",
+  "messagesCount": 2,
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+}
+[03:31:39.420] info: AI回应生成成功
+  {
+  "status": 200,
+  "responseTime": "2455ms",
+  "usage": {
+    "prompt_tokens": 275,
+    "completion_tokens": 46,
+    "total_tokens": 321,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:31:39.421] info: 回复生成完成 {"requestId":"dispatch-1755631887922-48f8m50l0","responseLength":78}
+[03:31:39.421] info: 智能调度处理完成
+  {
+  "requestId": "dispatch-1755631887922-48f8m50l0",
+  "userId": "68a21bf0cdab688c24714231",
+  "processingTime": "11499ms",
+  "responseLength": 78,
+  "servicesExecuted": [
+    "externalTool",
+    "conversation"
+  ]
+}
+调度结果: {
+  success: undefined,
+  intents: [ 'EXTERNAL_TOOL', 'CONVERSATION' ],
+  servicesExecuted: [ 'externalTool', 'conversation' ],
+  hasWeatherInfo: false
+}
+期望意图: [ 'CONVERSATION' ]
+实际意图: [ 'EXTERNAL_TOOL', 'CONVERSATION' ]
+✅ 天气信息检查通过
+✅ 测试通过
+
+=== 测试路线规划MCP ===
+
+测试: 路线查询
+输入: "从我公司到虹桥机场需要多久？"
+[03:31:39.422] info: 开始智能调度处理
+  {
+  "requestId": "dispatch-1755631899422-p11veumtq",
+  "userInput": "从我公司到虹桥机场需要多久？",
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "test-session-route",
+  "inputLength": 14
+}
+[03:31:39.422] info: 步骤1: 执行意图识别 {"requestId":"dispatch-1755631899422-p11veumtq"}
+[03:31:39.423] info: 开始意图识别 {"userInput":"从我公司到虹桥机场需要多久？","inputLength":14}
+[03:31:39.423] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":584}
+[03:31:39.423] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[03:31:42.699] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 592,
+    "completion_tokens": 108,
+    "total_tokens": 700,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:31:42.699] info: 收到模型响应 {"responseLength":273,"responseTime":"3277ms"}
+[03:31:42.700] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"EXTERNAL_TOOL\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户询问从公司到虹桥机场所需时间，这需要调用外部工具（如地图或交通API）来获取实时交通信息。\",\n  \"extracted_info\": {\n    \"keywords\": [\"公司\", \"虹桥机场\", \"多久\"],\n    \"entities\": {\n   ..."
+}
+[03:31:42.700] info: 意图识别结果解析成功 {"intent":"EXTERNAL_TOOL","confidence":0.95,"hasExtractedInfo":true}
+[03:31:42.700] info: 意图识别完成 {"intent":"EXTERNAL_TOOL","confidence":0.95,"processingTime":"3278ms","success":true}
+[03:31:42.700] info: 意图识别完成 {"requestId":"dispatch-1755631899422-p11veumtq","intent":"EXTERNAL_TOOL","confidence":0.95}
+[03:31:42.701] info: 步骤2: 分析多重意图 {"requestId":"dispatch-1755631899422-p11veumtq"}
+[03:31:42.701] info: Action Router 分析完成
+  {
+  "userInput": "从我公司到虹桥机场需要多久？",
+  "actionPlan": [
+    {
+      "intent": "TASK_CREATION",
+      "priority": 1
+    },
+    {
+      "intent": "EXTERNAL_TOOL",
+      "priority": 1
+    }
+  ],
+  "totalActions": 2
+}
+[03:31:42.701] info: 多重意图分析完成
+  {
+  "requestId": "dispatch-1755631899422-p11veumtq",
+  "intents": [
+    "TASK_CREATION",
+    "EXTERNAL_TOOL"
+  ],
+  "count": 2
+}
+[03:31:42.701] info: 步骤3: 执行相应的服务 {"requestId":"dispatch-1755631899422-p11veumtq"}
+[03:31:42.701] info: 执行优先级 1 的服务 {"intents":["TASK_CREATION","EXTERNAL_TOOL"],"count":2}
+[03:31:42.702] info: 开始执行任务创建
+  {
+  "userInput": "从我公司到虹桥机场需要多久？",
+  "timeInfo": {
+    "date": null,
+    "timeBlock": null,
+    "specificTime": null
+  },
+  "userId": "68a21bf0cdab688c24714231"
+}
+[03:31:42.702] info: 开始直接创建任务
+  {
+  "userInput": "从我公司到虹桥机场需要多久？",
+  "userId": "68a21bf0cdab688c24714231",
+  "timeInfo": {
+    "date": null,
+    "timeBlock": null,
+    "specificTime": null
+  }
+}
+[03:31:42.702] info: 开始意图识别 {"userInput":"从我公司到虹桥机场需要多久？","inputLength":14}
+[03:31:42.702] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":584}
+[03:31:42.702] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[03:31:42.703] info: 开始执行外部工具调用 {"userInput":"从我公司到虹桥机场需要多久？","toolType":"route","userId":"68a21bf0cdab688c24714231"}
+[03:31:42.705] error: 外部工具调用失败
+  {
+  "error": "Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js",
+  "toolType": "route",
+  "userInput": "从我公司到虹桥机场需要多久？"
+}
+[03:31:42.705] info: 外部工具调用完成 {"success":false}
+[03:31:45.657] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 592,
+    "completion_tokens": 112,
+    "total_tokens": 704,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:31:45.657] info: 收到模型响应 {"responseLength":280,"responseTime":"2955ms"}
+[03:31:45.657] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"EXTERNAL_TOOL\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户询问从公司到虹桥机场所需时间，需要调用外部工具（如地图或交通API）来获取交通时间信息。\",\n  \"extracted_info\": {\n    \"keywords\": [\"公司\", \"虹桥机场\", \"需要多久\"],\n    \"entities\": {\n  ..."
+}
+[03:31:45.657] info: 意图识别结果解析成功 {"intent":"EXTERNAL_TOOL","confidence":0.95,"hasExtractedInfo":true}
+[03:31:45.657] info: 意图识别完成 {"intent":"EXTERNAL_TOOL","confidence":0.95,"processingTime":"2955ms","success":true}
+[03:31:45.658] info: 意图识别完成（用于信息提取） {"intent":"EXTERNAL_TOOL","confidence":0.95}
+[03:31:45.658] info: 强制设置为任务创建意图 {"intent":"TASK_CREATION","confidence":0.95}
+[03:31:45.658] info: 提取任务信息完成
+  {
+  "title": "交通时间查询",
+  "timeBlock": {
+    "startTime": "14:00",
+    "endTime": "18:00",
+    "timeBlockType": "afternoon"
+  },
+  "timeInfoInput": {
+    "date": null,
+    "timeBlock": null,
+    "specificTime": null
+  }
+}
+[03:31:45.658] info: 提取任务信息完成
+  {
+  "taskInfo": {
+    "title": "交通时间查询",
+    "userId": "68a21bf0cdab688c24714231",
+    "timeBlock": {
+      "startTime": "14:00",
+      "endTime": "18:00",
+      "timeBlockType": "afternoon"
+    }
+  }
+}
+[03:31:45.658] info: 开始存储任务到数据库
+  {
+  "taskInfo": {
+    "title": "交通时间查询",
+    "userId": "68a21bf0cdab688c24714231",
+    "timeBlock": {
+      "startTime": "14:00",
+      "endTime": "18:00",
+      "timeBlockType": "afternoon"
+    }
+  }
+}
+[03:31:45.662] info: 任务存储成功 {"taskId":"68a4d121a667cc3fb0bead99"}
+[03:31:45.663] info: 任务直接创建成功 {"taskId":"68a4d121a667cc3fb0bead99","title":"交通时间查询","processingTime":"2961ms"}
+[03:31:45.663] info: 任务创建完成 {"success":true}
+[03:31:45.663] info: 优先级 1 的服务执行完成 {"results":["externalTool","taskCreation"]}
+[03:31:45.663] info: 服务执行完成
+  {
+  "requestId": "dispatch-1755631899422-p11veumtq",
+  "servicesExecuted": [
+    "externalTool",
+    "taskCreation"
+  ],
+  "successCount": 1
+}
+[03:31:45.663] info: 步骤4: 生成统一回复 {"requestId":"dispatch-1755631899422-p11veumtq"}
+[03:31:45.664] info: 开始生成统一回复
+  {
+  "userInput": "从我公司到虹桥机场需要多久？",
+  "intentsCount": 2,
+  "executionResultsKeys": [
+    "externalTool",
+    "taskCreation"
+  ],
+  "executionResults": {
+    "externalTool": {
+      "success": false,
+      "type": "route",
+      "message": "外部工具调用失败: Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js",
+      "error": "Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js"
+    },
+    "taskCreation": {
+      "success": true,
+      "message": "任务创建成功",
+      "task": {
+        "timeBlock": {
+          "startTime": "14:00",
+          "endTime": "18:00",
+          "timeBlockType": "afternoon"
+        },
+        "_id": "68a4d121a667cc3fb0bead99",
+        "title": "交通时间查询",
+        "description": "",
+        "priority": "medium",
+        "completed": false,
+        "userId": "68a21bf0cdab688c24714231",
+        "isScheduled": false,
+        "createdAt": "2025-08-19T19:31:45.659Z",
+        "updatedAt": "2025-08-19T19:31:45.659Z",
+        "__v": 0
+      },
+      "intentResult": {
+        "intent": "TASK_CREATION",
+        "confidence": 0.95,
+        "reasoning": "用户询问从公司到虹桥机场所需时间，需要调用外部工具（如地图或交通API）来获取交通时间信息。",
+        "extracted_info": {
+          "keywords": [
+            "公司",
+            "虹桥机场",
+            "需要多久"
+          ],
+          "entities": {
+            "time": "",
+            "location": "公司, 虹桥机场",
+            "task": "交通时间查询"
+          }
+        },
+        "original_input": "从我公司到虹桥机场需要多久？",
+        "timestamp": "2025-08-19T19:31:45.657Z",
+        "intent_description": "外部工具调用（地图、天气等）"
+      },
+      "processingTime": 2961
+    }
+  }
+}
+[03:31:45.664] info: 调用通义千问API生成回应
+  {
+  "model": "qwen-plus",
+  "messagesCount": 2,
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+}
+[03:31:47.626] info: AI回应生成成功
+  {
+  "status": 200,
+  "responseTime": "1962ms",
+  "usage": {
+    "prompt_tokens": 280,
+    "completion_tokens": 63,
+    "total_tokens": 343,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:31:47.626] info: 回复生成完成 {"requestId":"dispatch-1755631899422-p11veumtq","responseLength":104}
+[03:31:47.627] info: 智能调度处理完成
+  {
+  "requestId": "dispatch-1755631899422-p11veumtq",
+  "userId": "68a21bf0cdab688c24714231",
+  "processingTime": "8204ms",
+  "responseLength": 104,
+  "servicesExecuted": [
+    "externalTool",
+    "taskCreation"
+  ]
+}
+调度结果: {
+  success: undefined,
+  intents: [ 'TASK_CREATION', 'EXTERNAL_TOOL' ],
+  servicesExecuted: [ 'externalTool', 'taskCreation' ],
+  hasRouteInfo: false
+}
+期望意图: [ 'EXTERNAL_TOOL' ]
+实际意图: [ 'TASK_CREATION', 'EXTERNAL_TOOL' ]
+✅ 测试通过
+
+测试: 导航查询
+输入: "去浦东机场怎么走？"
+[03:31:47.627] info: 开始智能调度处理
+  {
+  "requestId": "dispatch-1755631907627-b1xluhkop",
+  "userInput": "去浦东机场怎么走？",
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "test-session-route",
+  "inputLength": 9
+}
+[03:31:47.628] info: 步骤1: 执行意图识别 {"requestId":"dispatch-1755631907627-b1xluhkop"}
+[03:31:47.628] info: 开始意图识别 {"userInput":"去浦东机场怎么走？","inputLength":9}
+[03:31:47.628] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":579}
+[03:31:47.628] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[03:31:49.904] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 589,
+    "completion_tokens": 90,
+    "total_tokens": 679,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:31:49.905] info: 收到模型响应 {"responseLength":226,"responseTime":"2277ms"}
+[03:31:49.905] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"EXTERNAL_TOOL\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户询问前往浦东机场的路线，这需要调用地图或导航工具来获取路线信息，属于外部工具调用意图。\",\n  \"extracted_info\": {\n    \"keywords\": [\"怎么走\", \"浦东机场\"],\n    \"entities\": {\n      \"loc..."
+}
+[03:31:49.905] info: 意图识别结果解析成功 {"intent":"EXTERNAL_TOOL","confidence":0.95,"hasExtractedInfo":true}
+[03:31:49.905] info: 意图识别完成 {"intent":"EXTERNAL_TOOL","confidence":0.95,"processingTime":"2277ms","success":true}
+[03:31:49.905] info: 意图识别完成 {"requestId":"dispatch-1755631907627-b1xluhkop","intent":"EXTERNAL_TOOL","confidence":0.95}
+[03:31:49.906] info: 步骤2: 分析多重意图 {"requestId":"dispatch-1755631907627-b1xluhkop"}
+[03:31:49.906] info: Action Router 分析完成
+  {
+  "userInput": "去浦东机场怎么走？",
+  "actionPlan": [
+    {
+      "intent": "TASK_CREATION",
+      "priority": 1
+    },
+    {
+      "intent": "EXTERNAL_TOOL",
+      "priority": 1
+    }
+  ],
+  "totalActions": 2
+}
+[03:31:49.906] info: 多重意图分析完成
+  {
+  "requestId": "dispatch-1755631907627-b1xluhkop",
+  "intents": [
+    "TASK_CREATION",
+    "EXTERNAL_TOOL"
+  ],
+  "count": 2
+}
+[03:31:49.906] info: 步骤3: 执行相应的服务 {"requestId":"dispatch-1755631907627-b1xluhkop"}
+[03:31:49.906] info: 执行优先级 1 的服务 {"intents":["TASK_CREATION","EXTERNAL_TOOL"],"count":2}
+[03:31:49.906] info: 开始执行任务创建
+  {
+  "userInput": "去浦东机场怎么走？",
+  "timeInfo": {
+    "date": null,
+    "timeBlock": null,
+    "specificTime": null
+  },
+  "userId": "68a21bf0cdab688c24714231"
+}
+[03:31:49.906] info: 开始直接创建任务
+  {
+  "userInput": "去浦东机场怎么走？",
+  "userId": "68a21bf0cdab688c24714231",
+  "timeInfo": {
+    "date": null,
+    "timeBlock": null,
+    "specificTime": null
+  }
+}
+[03:31:49.906] info: 开始意图识别 {"userInput":"去浦东机场怎么走？","inputLength":9}
+[03:31:49.907] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":579}
+[03:31:49.907] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[03:31:49.908] info: 开始执行外部工具调用 {"userInput":"去浦东机场怎么走？","toolType":"unknown","userId":"68a21bf0cdab688c24714231"}
+[03:31:49.908] error: 外部工具调用失败
+  {
+  "error": "Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js",
+  "toolType": "unknown",
+  "userInput": "去浦东机场怎么走？"
+}
+[03:31:49.908] info: 外部工具调用完成 {"success":false}
+[03:31:55.945] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 589,
+    "completion_tokens": 85,
+    "total_tokens": 674,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:31:55.946] info: 收到模型响应 {"responseLength":225,"responseTime":"6040ms"}
+[03:31:55.946] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"EXTERNAL_TOOL\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户询问前往某个地点的路线，需要调用地图或导航工具获取信息。\",\n  \"extracted_info\": {\n    \"keywords\": [\"怎么走\"],\n    \"entities\": {\n      \"location\": \"浦东机场\"\n    },\n ..."
+}
+[03:31:55.946] info: 意图识别结果解析成功 {"intent":"EXTERNAL_TOOL","confidence":0.95,"hasExtractedInfo":true}
+[03:31:55.947] info: 意图识别完成 {"intent":"EXTERNAL_TOOL","confidence":0.95,"processingTime":"6040ms","success":true}
+[03:31:55.947] info: 意图识别完成（用于信息提取） {"intent":"EXTERNAL_TOOL","confidence":0.95}
+[03:31:55.947] info: 强制设置为任务创建意图 {"intent":"TASK_CREATION","confidence":0.95}
+[03:31:55.947] info: 提取任务信息完成
+  {
+  "title": "去浦东机场怎么走？",
+  "timeBlock": {
+    "startTime": "14:00",
+    "endTime": "18:00",
+    "timeBlockType": "afternoon"
+  },
+  "timeInfoInput": {
+    "date": null,
+    "timeBlock": null,
+    "specificTime": null
+  }
+}
+[03:31:55.947] info: 提取任务信息完成
+  {
+  "taskInfo": {
+    "title": "去浦东机场怎么走？",
+    "userId": "68a21bf0cdab688c24714231",
+    "timeBlock": {
+      "startTime": "14:00",
+      "endTime": "18:00",
+      "timeBlockType": "afternoon"
+    }
+  }
+}
+[03:31:55.948] info: 开始存储任务到数据库
+  {
+  "taskInfo": {
+    "title": "去浦东机场怎么走？",
+    "userId": "68a21bf0cdab688c24714231",
+    "timeBlock": {
+      "startTime": "14:00",
+      "endTime": "18:00",
+      "timeBlockType": "afternoon"
+    }
+  }
+}
+[03:31:55.955] info: 任务存储成功 {"taskId":"68a4d12ba667cc3fb0bead9c"}
+[03:31:55.955] info: 任务直接创建成功 {"taskId":"68a4d12ba667cc3fb0bead9c","title":"去浦东机场怎么走？","processingTime":"6049ms"}
+[03:31:55.955] info: 任务创建完成 {"success":true}
+[03:31:55.956] info: 优先级 1 的服务执行完成 {"results":["externalTool","taskCreation"]}
+[03:31:55.956] info: 服务执行完成
+  {
+  "requestId": "dispatch-1755631907627-b1xluhkop",
+  "servicesExecuted": [
+    "externalTool",
+    "taskCreation"
+  ],
+  "successCount": 1
+}
+[03:31:55.956] info: 步骤4: 生成统一回复 {"requestId":"dispatch-1755631907627-b1xluhkop"}
+[03:31:55.956] info: 开始生成统一回复
+  {
+  "userInput": "去浦东机场怎么走？",
+  "intentsCount": 2,
+  "executionResultsKeys": [
+    "externalTool",
+    "taskCreation"
+  ],
+  "executionResults": {
+    "externalTool": {
+      "success": false,
+      "type": "unknown",
+      "message": "外部工具调用失败: Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js",
+      "error": "Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js"
+    },
+    "taskCreation": {
+      "success": true,
+      "message": "任务创建成功",
+      "task": {
+        "timeBlock": {
+          "startTime": "14:00",
+          "endTime": "18:00",
+          "timeBlockType": "afternoon"
+        },
+        "_id": "68a4d12ba667cc3fb0bead9c",
+        "title": "去浦东机场怎么走？",
+        "description": "",
+        "priority": "medium",
+        "completed": false,
+        "userId": "68a21bf0cdab688c24714231",
+        "isScheduled": false,
+        "createdAt": "2025-08-19T19:31:55.949Z",
+        "updatedAt": "2025-08-19T19:31:55.949Z",
+        "__v": 0
+      },
+      "intentResult": {
+        "intent": "TASK_CREATION",
+        "confidence": 0.95,
+        "reasoning": "用户询问前往某个地点的路线，需要调用地图或导航工具获取信息。",
+        "extracted_info": {
+          "keywords": [
+            "怎么走"
+          ],
+          "entities": {
+            "location": "浦东机场"
+          },
+          "task": "前往浦东机场"
+        },
+        "original_input": "去浦东机场怎么走？",
+        "timestamp": "2025-08-19T19:31:55.946Z",
+        "intent_description": "外部工具调用（地图、天气等）"
+      },
+      "processingTime": 6049
+    }
+  }
+}
+[03:31:55.957] info: 调用通义千问API生成回应
+  {
+  "model": "qwen-plus",
+  "messagesCount": 2,
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+}
+[03:31:57.548] info: AI回应生成成功
+  {
+  "status": 200,
+  "responseTime": "1591ms",
+  "usage": {
+    "prompt_tokens": 280,
+    "completion_tokens": 59,
+    "total_tokens": 339,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:31:57.549] info: 回复生成完成 {"requestId":"dispatch-1755631907627-b1xluhkop","responseLength":101}
+[03:31:57.549] info: 智能调度处理完成
+  {
+  "requestId": "dispatch-1755631907627-b1xluhkop",
+  "userId": "68a21bf0cdab688c24714231",
+  "processingTime": "9922ms",
+  "responseLength": 101,
+  "servicesExecuted": [
+    "externalTool",
+    "taskCreation"
+  ]
+}
+调度结果: {
+  success: undefined,
+  intents: [ 'TASK_CREATION', 'EXTERNAL_TOOL' ],
+  servicesExecuted: [ 'externalTool', 'taskCreation' ],
+  hasRouteInfo: false
+}
+期望意图: [ 'EXTERNAL_TOOL' ]
+实际意图: [ 'TASK_CREATION', 'EXTERNAL_TOOL' ]
+✅ 测试通过
+
+=== 测试天气查询MCP ===
+
+测试: 天气查询
+输入: "今天天气怎么样？"
+[03:31:57.550] info: 开始智能调度处理
+  {
+  "requestId": "dispatch-1755631917550-alkfot1zj",
+  "userInput": "今天天气怎么样？",
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "test-session-weather",
+  "inputLength": 8
+}
+[03:31:57.551] info: 步骤1: 执行意图识别 {"requestId":"dispatch-1755631917550-alkfot1zj"}
+[03:31:57.551] info: 开始意图识别 {"userInput":"今天天气怎么样？","inputLength":8}
+[03:31:57.551] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":578}
+[03:31:57.551] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[03:31:59.474] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 587,
+    "completion_tokens": 82,
+    "total_tokens": 669,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:31:59.474] info: 收到模型响应 {"responseLength":235,"responseTime":"1923ms"}
+[03:31:59.475] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"EXTERNAL_TOOL\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户询问天气情况，需要调用外部天气API获取信息。\",\n  \"extracted_info\": {\n    \"keywords\": [\"天气\"],\n    \"entities\": {\n      \"time\": \"今天\",\n      \"location\": n..."
+}
+[03:31:59.475] info: 意图识别结果解析成功 {"intent":"EXTERNAL_TOOL","confidence":0.95,"hasExtractedInfo":true}
+[03:31:59.475] info: 意图识别完成 {"intent":"EXTERNAL_TOOL","confidence":0.95,"processingTime":"1924ms","success":true}
+[03:31:59.475] info: 意图识别完成 {"requestId":"dispatch-1755631917550-alkfot1zj","intent":"EXTERNAL_TOOL","confidence":0.95}
+[03:31:59.476] info: 步骤2: 分析多重意图 {"requestId":"dispatch-1755631917550-alkfot1zj"}
+[03:31:59.476] info: Action Router 分析完成
+  {
+  "userInput": "今天天气怎么样？",
+  "actionPlan": [
+    {
+      "intent": "EXTERNAL_TOOL",
+      "priority": 1
+    },
+    {
+      "intent": "CONVERSATION",
+      "priority": 3
+    }
+  ],
+  "totalActions": 2
+}
+[03:31:59.476] info: 多重意图分析完成
+  {
+  "requestId": "dispatch-1755631917550-alkfot1zj",
+  "intents": [
+    "EXTERNAL_TOOL",
+    "CONVERSATION"
+  ],
+  "count": 2
+}
+[03:31:59.476] info: 步骤3: 执行相应的服务 {"requestId":"dispatch-1755631917550-alkfot1zj"}
+[03:31:59.476] info: 执行优先级 1 的服务 {"intents":["EXTERNAL_TOOL"],"count":1}
+[03:31:59.477] info: 开始执行外部工具调用 {"userInput":"今天天气怎么样？","toolType":"weather","userId":"68a21bf0cdab688c24714231"}
+[03:31:59.477] error: 外部工具调用失败
+  {
+  "error": "Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js",
+  "toolType": "weather",
+  "userInput": "今天天气怎么样？"
+}
+[03:31:59.478] info: 外部工具调用完成 {"success":false}
+[03:31:59.478] info: 优先级 1 的服务执行完成 {"results":["externalTool"]}
+[03:31:59.478] info: 执行优先级 3 的服务 {"intents":["CONVERSATION"],"count":1}
+[03:31:59.478] info: 开始执行对话处理
+  {
+  "userInput": "今天天气怎么样？",
+  "userId": "68a21bf0cdab688c24714231",
+  "sessionId": "test-session-weather",
+  "hasPreviousResults": true
+}
+[03:31:59.478] info: 开始处理对话 {"userId":"68a21bf0cdab688c24714231","sessionId":"test-session-weather","messageLength":8}
+[03:31:59.478] info: 开始意图识别 今天天气怎么样？... {"userId":"68a21bf0cdab688c24714231"}
+[03:31:59.479] info: 开始意图识别 {"userInput":"今天天气怎么样？","inputLength":8}
+[03:31:59.479] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":578}
+[03:31:59.479] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[03:32:01.537] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 587,
+    "completion_tokens": 83,
+    "total_tokens": 670,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:32:01.538] info: 收到模型响应 {"responseLength":237,"responseTime":"2059ms"}
+[03:32:01.538] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"EXTERNAL_TOOL\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户询问天气情况，需要调用外部天气API获取信息。\",\n  \"extracted_info\": {\n    \"keywords\": [\"今天\", \"天气\"],\n    \"entities\": {\n      \"time\": \"今天\",\n      \"locati..."
+}
+[03:32:01.538] info: 意图识别结果解析成功 {"intent":"EXTERNAL_TOOL","confidence":0.95,"hasExtractedInfo":true}
+[03:32:01.538] info: 意图识别完成 {"intent":"EXTERNAL_TOOL","confidence":0.95,"processingTime":"2059ms","success":true}
+[03:32:01.538] warn: 消息意图不是对话类型 {"userId":"68a21bf0cdab688c24714231","intent":"EXTERNAL_TOOL","confidence":0.95}
+[03:32:01.538] info: 对话处理完成 {"success":false}
+[03:32:01.538] info: 优先级 3 的服务执行完成 {"results":["externalTool","conversation"]}
+[03:32:01.539] info: 服务执行完成
+  {
+  "requestId": "dispatch-1755631917550-alkfot1zj",
+  "servicesExecuted": [
+    "externalTool",
+    "conversation"
+  ],
+  "successCount": 0
+}
+[03:32:01.539] info: 步骤4: 生成统一回复 {"requestId":"dispatch-1755631917550-alkfot1zj"}
+[03:32:01.539] info: 开始生成统一回复
+  {
+  "userInput": "今天天气怎么样？",
+  "intentsCount": 2,
+  "executionResultsKeys": [
+    "externalTool",
+    "conversation"
+  ],
+  "executionResults": {
+    "externalTool": {
+      "success": false,
+      "type": "weather",
+      "message": "外部工具调用失败: Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js",
+      "error": "Cannot find module '../../../mcp'\nRequire stack:\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/gaodeMcpClient.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/services/intelligentDispatchService.js\n- /Users/bytedance/Desktop/backend(1) 3/backend/src/AIsiri/tests/mcp-integration-test.js"
+    },
+    "conversation": {
+      "success": false,
+      "error": "该消息不属于对话类型，请使用相应的功能模块处理",
+      "intent": "EXTERNAL_TOOL",
+      "suggestion": "请使用相应的工具功能来获取外部信息（如天气、地图等）",
+      "emotion": "neutral",
+      "weather": null
+    }
+  }
+}
+[03:32:01.539] info: 调用通义千问API生成回应
+  {
+  "model": "qwen-plus",
+  "messagesCount": 2,
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+}
+[03:32:03.876] info: AI回应生成成功
+  {
+  "status": 200,
+  "responseTime": "2337ms",
+  "usage": {
+    "prompt_tokens": 269,
+    "completion_tokens": 53,
+    "total_tokens": 322,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[03:32:03.877] info: 回复生成完成 {"requestId":"dispatch-1755631917550-alkfot1zj","responseLength":88}
+[03:32:03.877] info: 智能调度处理完成
+  {
+  "requestId": "dispatch-1755631917550-alkfot1zj",
+  "userId": "68a21bf0cdab688c24714231",
+  "processingTime": "6327ms",
+  "responseLength": 88,
+  "servicesExecuted": [
+    "externalTool",
+    "conversation"
+  ]
+}
+调度结果: {
+  success: undefined,
+  intents: [ 'EXTERNAL_TOOL', 'CONVERSATION' ],
+  servicesExecuted: [ 'externalTool', 'conversation' ],
+  hasWeatherInfo: false
+}
+⚠️  天气查询MCP调用失败
+✅ 测试通过
+
+=== MCP集成测试结果汇总 ===
+通过: 6/6
+成功率: 100.0%
+🎉 所有MCP集成测试都通过了！
+MongoDB Disconnected

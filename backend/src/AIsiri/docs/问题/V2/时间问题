@@ -1,0 +1,468 @@
+[04:17:24.177] info: 步骤1: 执行意图识别 {"requestId":"dispatch-1755634644177-hhq37opdh"}
+[04:17:24.178] info: 开始意图识别 {"userInput":"提醒我明天上午10点开会。","inputLength":13}
+[04:17:24.178] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":373}
+[04:17:24.178] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[04:17:26.025] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 472,
+    "completion_tokens": 92,
+    "total_tokens": 564,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[04:17:26.026] info: 收到模型响应 {"responseLength":247,"responseTime":"1848ms"}
+[04:17:26.026] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"TASK_CREATION\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户明确表达了需要被提醒某个任务，属于创建新任务的范畴。\",\n  \"extracted_info\": {\n    \"keywords\": [\"提醒\", \"开会\"],\n    \"entities\": {\n      \"time\": \"明天上午10点\",\n     ..."
+}
+[04:17:26.026] info: 意图识别结果解析成功 {"intent":"TASK_CREATION","confidence":0.95,"hasExtractedInfo":true}
+[04:17:26.026] info: 意图识别完成 {"intent":"TASK_CREATION","confidence":0.95,"processingTime":"1848ms","success":true}
+[04:17:26.027] info: 意图识别完成 {"requestId":"dispatch-1755634644177-hhq37opdh","intent":"TASK_CREATION","confidence":0.95}
+[04:17:26.027] info: 步骤2: 分析多重意图 {"requestId":"dispatch-1755634644177-hhq37opdh"}
+[04:17:26.027] info: Action Router 分析完成
+  {
+  "userInput": "提醒我明天上午10点开会。",
+  "actionPlan": [
+    {
+      "intent": "TASK_CREATION",
+      "priority": 1
+    },
+    {
+      "intent": "SCHEDULE_PLANNING",
+      "priority": 2
+    }
+  ],
+  "totalActions": 2
+}
+[04:17:26.027] info: 多重意图分析完成
+  {
+  "requestId": "dispatch-1755634644177-hhq37opdh",
+  "intents": [
+    "TASK_CREATION",
+    "SCHEDULE_PLANNING"
+  ],
+  "count": 2
+}
+[04:17:26.027] info: 步骤3: 执行相应的服务 {"requestId":"dispatch-1755634644177-hhq37opdh"}
+[04:17:26.027] info: 执行优先级 1 的服务 {"intents":["TASK_CREATION"],"count":1}
+[04:17:26.028] info: 开始执行任务创建
+  {
+  "userInput": "提醒我明天上午10点开会。",
+  "timeInfo": {
+    "date": "2025-08-20",
+    "timeBlock": {
+      "timeBlockType": "forenoon",
+      "startTime": "09:00",
+      "endTime": "12:00"
+    },
+    "specificTime": null
+  },
+  "userId": "68a21bf0cdab688c24714231"
+}
+[04:17:26.028] info: 开始直接创建任务
+  {
+  "userInput": "提醒我明天上午10点开会。",
+  "userId": "68a21bf0cdab688c24714231",
+  "timeInfo": {
+    "date": "2025-08-20",
+    "timeBlock": {
+      "timeBlockType": "forenoon",
+      "startTime": "09:00",
+      "endTime": "12:00"
+    },
+    "specificTime": null
+  }
+}
+[04:17:26.028] info: 开始意图识别 {"userInput":"提醒我明天上午10点开会。","inputLength":13}
+[04:17:26.028] info: 发送请求到通义千问模型 {"messagesCount":2,"systemPromptLength":530,"userPromptLength":373}
+[04:17:26.028] info: 准备调用通义千问API
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2
+}
+[04:17:27.741] info: 通义千问API调用成功
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 472,
+    "completion_tokens": 92,
+    "total_tokens": 564,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[04:17:27.741] info: 收到模型响应 {"responseLength":247,"responseTime":"1713ms"}
+[04:17:27.741] info: 开始解析模型响应
+  {
+  "responseContent": "{\n  \"intent\": \"TASK_CREATION\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"用户明确表达了需要被提醒某个任务，属于创建新任务的范畴。\",\n  \"extracted_info\": {\n    \"keywords\": [\"提醒\", \"开会\"],\n    \"entities\": {\n      \"time\": \"明天上午10点\",\n     ..."
+}
+[04:17:27.742] info: 意图识别结果解析成功 {"intent":"TASK_CREATION","confidence":0.95,"hasExtractedInfo":true}
+[04:17:27.742] info: 意图识别完成 {"intent":"TASK_CREATION","confidence":0.95,"processingTime":"1714ms","success":true}
+[04:17:27.742] info: 意图识别完成（用于信息提取） {"intent":"TASK_CREATION","confidence":0.95}
+[04:17:27.742] info: 强制设置为任务创建意图 {"intent":"TASK_CREATION","confidence":0.95}
+[04:17:27.742] info: 提取任务信息完成
+  {
+  "title": "开会",
+  "timeBlock": {
+    "startTime": "08:00",
+    "endTime": "12:00",
+    "timeBlockType": "morning"
+  },
+  "targetDate": "2025-08-20",
+  "timeInfoInput": {
+    "date": "2025-08-20",
+    "timeBlock": {
+      "timeBlockType": "forenoon",
+      "startTime": "09:00",
+      "endTime": "12:00"
+    },
+    "specificTime": null
+  }
+}
+[04:17:27.742] info: 提取任务信息完成
+  {
+  "taskInfo": {
+    "title": "开会",
+    "userId": "68a21bf0cdab688c24714231",
+    "timeBlock": {
+      "startTime": "08:00",
+      "endTime": "12:00",
+      "timeBlockType": "morning"
+    },
+    "targetDate": "2025-08-20"
+  }
+}
+[04:17:27.743] info: 开始存储任务到数据库
+  {
+  "taskInfo": {
+    "title": "开会",
+    "userId": "68a21bf0cdab688c24714231",
+    "timeBlock": {
+      "startTime": "08:00",
+      "endTime": "12:00",
+      "timeBlockType": "morning"
+    },
+    "targetDate": "2025-08-20"
+  }
+}
+[04:17:27.751] info: 任务存储成功 {"taskId":"68a4dbd77ce84d4aca622446"}
+[04:17:27.751] info: 任务直接创建成功 {"taskId":"68a4dbd77ce84d4aca622446","title":"开会","processingTime":"1723ms"}
+[04:17:27.752] info: 任务创建完成 {"success":true}
+[04:17:27.752] info: 优先级 1 的服务执行完成 {"results":["taskCreation"]}
+[04:17:27.752] info: 执行优先级 2 的服务 {"intents":["SCHEDULE_PLANNING"],"count":1}
+[04:17:27.752] info: 开始执行时间调度
+  {
+  "userInput": "提醒我明天上午10点开会。",
+  "targetDate": "2025-08-19",
+  "userId": "68a21bf0cdab688c24714231",
+  "hasPreviousTaskCreation": true
+}
+[04:17:27.753] info: 开始任务调度规划
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "userInput": "提醒我明天上午10点开会。",
+  "targetDate": "2025-08-19",
+  "userContext": {
+    "emotionalState": "neutral",
+    "previousTaskCreation": {
+      "success": true,
+      "message": "任务创建成功",
+      "task": {
+        "timeBlock": {
+          "startTime": "08:00",
+          "endTime": "12:00",
+          "timeBlockType": "morning"
+        },
+        "_id": "68a4dbd77ce84d4aca622446",
+        "title": "开会",
+        "description": "",
+        "priority": "medium",
+        "completed": false,
+        "userId": "68a21bf0cdab688c24714231",
+        "isScheduled": false,
+        "createdAt": "2025-08-19T20:17:27.744Z",
+        "updatedAt": "2025-08-19T20:17:27.744Z",
+        "__v": 0
+      },
+      "intentResult": {
+        "intent": "TASK_CREATION",
+        "confidence": 0.95,
+        "reasoning": "用户明确表达了需要被提醒某个任务，属于创建新任务的范畴。",
+        "extracted_info": {
+          "keywords": [
+            "提醒",
+            "开会"
+          ],
+          "entities": {
+            "time": "明天上午10点",
+            "location": "",
+            "task": "开会"
+          }
+        },
+        "original_input": "提醒我明天上午10点开会。",
+        "timestamp": "2025-08-19T20:17:27.741Z",
+        "intent_description": "任务新增（待办事项、习惯养成）"
+      },
+      "processingTime": 1723
+    }
+  }
+}
+[04:17:27.756] info: 获取用户现有任务 {"userId":"68a21bf0cdab688c24714231","taskCount":1,"date":"2025-08-19"}
+[04:17:27.758] info: 获取用户任务集信息 {"userId":"68a21bf0cdab688c24714231","collectionCount":1}
+[04:17:27.759] info: 构建调度规划Prompt完成 {"messagesCount":2}
+[04:17:27.759] info: 调用通义千问API进行调度分析
+  {
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "messagesCount": 2,
+  "temperature": 0.3
+}
+[04:17:36.863] info: 通义千问API调用成功 (调度分析)
+  {
+  "status": 200,
+  "usage": {
+    "prompt_tokens": 952,
+    "completion_tokens": 450,
+    "total_tokens": 1402,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[04:17:36.864] info: 通义千问调度分析完成 {"responseLength":1243}
+[04:17:36.864] info: 调度建议解析成功 {"adjustmentCount":1,"breakCount":1}
+[04:17:36.865] info: 任务调度规划完成
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "targetDate": "2025-08-19",
+  "processingTime": "9112ms",
+  "success": true
+}
+[04:17:36.865] info: 时间调度完成 {"success":true}
+[04:17:36.865] info: 优先级 2 的服务执行完成 {"results":["taskCreation","schedulePlanning"]}
+[04:17:36.865] info: 服务执行完成
+  {
+  "requestId": "dispatch-1755634644177-hhq37opdh",
+  "servicesExecuted": [
+    "taskCreation",
+    "schedulePlanning"
+  ],
+  "successCount": 2
+}
+[04:17:36.865] info: 步骤4: 生成统一回复 {"requestId":"dispatch-1755634644177-hhq37opdh"}
+[04:17:36.865] info: 开始生成统一回复
+  {
+  "userInput": "提醒我明天上午10点开会。",
+  "intentsCount": 2,
+  "executionResultsKeys": [
+    "taskCreation",
+    "schedulePlanning"
+  ],
+  "executionResults": {
+    "taskCreation": {
+      "success": true,
+      "message": "任务创建成功",
+      "task": {
+        "timeBlock": {
+          "startTime": "08:00",
+          "endTime": "12:00",
+          "timeBlockType": "morning"
+        },
+        "_id": "68a4dbd77ce84d4aca622446",
+        "title": "开会",
+        "description": "",
+        "priority": "medium",
+        "completed": false,
+        "userId": "68a21bf0cdab688c24714231",
+        "isScheduled": false,
+        "createdAt": "2025-08-19T20:17:27.744Z",
+        "updatedAt": "2025-08-19T20:17:27.744Z",
+        "__v": 0
+      },
+      "intentResult": {
+        "intent": "TASK_CREATION",
+        "confidence": 0.95,
+        "reasoning": "用户明确表达了需要被提醒某个任务，属于创建新任务的范畴。",
+        "extracted_info": {
+          "keywords": [
+            "提醒",
+            "开会"
+          ],
+          "entities": {
+            "time": "明天上午10点",
+            "location": "",
+            "task": "开会"
+          }
+        },
+        "original_input": "提醒我明天上午10点开会。",
+        "timestamp": "2025-08-19T20:17:27.741Z",
+        "intent_description": "任务新增（待办事项、习惯养成）"
+      },
+      "processingTime": 1723
+    },
+    "schedulePlanning": {
+      "success": true,
+      "data": {
+        "analysis": {
+          "timeConflicts": [],
+          "priorityInsights": "由于任务尚未分类，无法确定优先级，但根据时间安排，明天上午10点属于高精力时间块，适合处理重要任务。",
+          "workloadAssessment": "目前没有其他任务，工作量较轻，可以轻松容纳新任务。",
+          "userStateConsiderations": "用户情绪状态为中性，适合安排重要或需要专注的任务。"
+        },
+        "recommendations": {
+          "taskAdjustments": [
+            {
+              "taskId": "new_task_1",
+              "action": "create",
+              "changes": {
+                "title": "开会",
+                "date": "2025-08-20",
+                "time": "10:00",
+                "timeBlock": {
+                  "startTime": "10:00",
+                  "endTime": "10:30",
+                  "timeBlockType": "forenoon"
+                },
+                "estimatedTime": 30,
+                "priority": "medium",
+                "quadrant": 3,
+                "reason": "任务设置为明天上午10点，属于紧急但不重要的任务，安排在适合创造性任务的时间块。"
+              }
+            }
+          ],
+          "breakSuggestions": [
+            {
+              "startTime": "10:30",
+              "endTime": "10:45",
+              "type": "short",
+              "activity": "短暂休息，放松眼睛和身体"
+            }
+          ],
+          "optimizationTips": [
+            "确保在会议前预留5-10分钟准备时间。",
+            "如果会议内容需要准备材料，请提前安排时间完成准备。"
+          ]
+        },
+        "schedule": {
+          "morning": [],
+          "forenoon": [
+            "new_task_1"
+          ],
+          "afternoon": [],
+          "evening": []
+        },
+        "summary": "已为您安排明天上午10点的会议，持续30分钟，安排在适合创造性任务的时间块。建议会议后安排短暂休息以保持精力。",
+        "appliedChanges": [],
+        "metadata": {
+          "currentTime": "2025/08/20 04:17:27",
+          "targetDate": "2025-08-19",
+          "existingTaskCount": 1,
+          "collectionCount": 1,
+          "userContext": {
+            "emotionalState": "neutral",
+            "previousTaskCreation": {
+              "success": true,
+              "message": "任务创建成功",
+              "task": {
+                "timeBlock": {
+                  "startTime": "08:00",
+                  "endTime": "12:00",
+                  "timeBlockType": "morning"
+                },
+                "_id": "68a4dbd77ce84d4aca622446",
+                "title": "开会",
+                "description": "",
+                "priority": "medium",
+                "completed": false,
+                "userId": "68a21bf0cdab688c24714231",
+                "isScheduled": false,
+                "createdAt": "2025-08-19T20:17:27.744Z",
+                "updatedAt": "2025-08-19T20:17:27.744Z",
+                "__v": 0
+              },
+              "intentResult": {
+                "intent": "TASK_CREATION",
+                "confidence": 0.95,
+                "reasoning": "用户明确表达了需要被提醒某个任务，属于创建新任务的范畴。",
+                "extracted_info": {
+                  "keywords": [
+                    "提醒",
+                    "开会"
+                  ],
+                  "entities": {
+                    "time": "明天上午10点",
+                    "location": "",
+                    "task": "开会"
+                  }
+                },
+                "original_input": "提醒我明天上午10点开会。",
+                "timestamp": "2025-08-19T20:17:27.741Z",
+                "intent_description": "任务新增（待办事项、习惯养成）"
+              },
+              "processingTime": 1723
+            }
+          },
+          "autoApplied": false,
+          "processingTime": 9112
+        }
+      }
+    }
+  }
+}
+[04:17:36.866] info: 调用通义千问API生成回应
+  {
+  "model": "qwen-plus",
+  "messagesCount": 2,
+  "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+}
+[04:17:37.909] info: AI回应生成成功
+  {
+  "status": 200,
+  "responseTime": "1043ms",
+  "usage": {
+    "prompt_tokens": 283,
+    "completion_tokens": 36,
+    "total_tokens": 319,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "model": "qwen-plus"
+}
+[04:17:37.910] info: 回复生成完成 {"requestId":"dispatch-1755634644177-hhq37opdh","responseLength":60}
+[04:17:37.910] info: 智能调度处理完成
+  {
+  "requestId": "dispatch-1755634644177-hhq37opdh",
+  "userId": "68a21bf0cdab688c24714231",
+  "processingTime": "13733ms",
+  "responseLength": 60,
+  "servicesExecuted": [
+    "taskCreation",
+    "schedulePlanning"
+  ]
+}
+[04:17:37.910] info: 智能调度处理完成
+  {
+  "userId": "68a21bf0cdab688c24714231",
+  "processingTime": 13733,
+  "responseLength": 60,
+  "servicesExecuted": [
+    "taskCreation",
+    "schedulePlanning"
+  ]
+}
+info: ::1 - - [19/Aug/2025:20:17:37 +0000] "POST /api/aisiri/dispatch HTTP/1.1" 200 826 "http://localhost:8080/ai-secretary" "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1" {"service":"aisiri-backend","timestamp":"2025-08-19T20:17:37.911Z"}
