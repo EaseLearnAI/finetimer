@@ -15,13 +15,10 @@ const userRoutes = require('./routes/user');
 const pomodoroRoutes = require('./routes/pomodoro');
 const taskRoutes = require('./routes/task');
 const collectionRoutes = require('./routes/collection');
-const aiRoutes = require('./routes/ai_routes');
 const aiAssistantRoutes = require('./routes/aiAssistant');
-const conversationRoutes = require('./AIsiri/routes/conversationRoutes');
 const voiceRoutes = require('./AIvoice/routes/voice_routes');
 const speechRecognitionRoutes = require('./AIvoice/routes/speechRecognitionRoutes');
 const imageAnalysisRoutes = require('./AIvoice/routes/imageAnalysisRoutes');
-const taskRecognitionRoutes = require('./AIsiri/routes/taskRecognitionRoutes');
 
 // 导入AIsiri智能调度路由
 const intelligentDispatchRoutes = require('./AIsiri/routes/intelligentDispatchRoutes');
@@ -58,16 +55,12 @@ const authMiddleware = authenticateToken;
 app.use('/api/pomodoro', authMiddleware, pomodoroRoutes); // 番茄钟路由
 app.use('/api/tasks', authMiddleware, taskRoutes); // 任务路由
 app.use('/api/collections', authMiddleware, collectionRoutes); // 任务集路由
-app.use('/api/ai', authMiddleware, aiRoutes); // AI路由
 app.use('/api/ai-assistant', authMiddleware, aiAssistantRoutes); // AI助手路由
-app.use('/api/ai/conversation', authMiddleware, conversationRoutes); // 对话路由
 app.use('/api/aivoice', authMiddleware, voiceRoutes); // 语音上传路由
 app.use('/api/speech-recognition', authMiddleware, speechRecognitionRoutes); // 语音识别路由
 app.use('/api/image-analysis', authMiddleware, imageAnalysisRoutes); // 图片分析路由
-app.use('/api/aisiri', authMiddleware, taskRecognitionRoutes); // 任务识别路由
-
-// 添加AIsiri智能调度路由
-app.use('/api/aisiri/dispatch', authMiddleware, intelligentDispatchRoutes); // 智能调度路由
+// AIsiri 智能调度路由（统一入口）
+app.use('/api/aisiri/dispatch', intelligentDispatchRoutes);
 
 // 基本路由
 app.get('/', (req, res) => {

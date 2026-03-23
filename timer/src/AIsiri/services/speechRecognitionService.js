@@ -217,7 +217,7 @@ class SpeechRecognitionService {
    */
   validateAudioFile(file) {
     const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp4', 'audio/aac', 'audio/flac', 'audio/ogg', 'audio/webm']
-    const maxSize = 100 * 1024 * 1024 // 100MB
+    const maxSize = 10 * 1024 * 1024 // 10MB
 
     const validation = {
       isValid: true,

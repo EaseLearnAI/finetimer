@@ -114,18 +114,14 @@ class IntelligentDispatchController {
         supportedIntents: [
           'CONVERSATION',
           'TASK_CREATION',
-          'SCHEDULE_PLANNING', 
-          'EXTERNAL_TOOL'
+          'SCHEDULE_PLANNING'
         ],
-        availableServices: healthStatus.services || {
-          intentRecognition: true,
-          conversation: true,
-          taskRecognition: true,
+        availableServices: {
+          router: true,
+          taskCreation: true,
           schedulePlanning: true,
-          externalTools: true
-        },
-        mcpServices: {
-          gaodeMap: true
+          emotionSupport: true,
+          memory: true,
         },
         timestamp: new Date().toISOString()
       };
@@ -215,8 +211,8 @@ class IntelligentDispatchController {
         expectedIntents: ['SCHEDULE_PLANNING']
       },
       {
-        input: '今天天气怎么样？',
-        expectedIntents: ['EXTERNAL_TOOL']
+        input: '我好累啊不想动了',
+        expectedIntents: ['CONVERSATION']
       },
       {
         input: '我最近工作压力很大',

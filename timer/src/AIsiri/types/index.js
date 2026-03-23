@@ -9,31 +9,31 @@ export const QUICK_ACTIONS = [
   {
     id: 'create-task',
     label: '创建任务',
-    text: '帮我创建一个新任务',
+    text: '帮我记录一个任务：明天下午3点开项目进度会',
     icon: 'plus'
   },
   {
     id: 'schedule-planning',
     label: '安排日程',
-    text: '帮我安排一下今天的日程',
+    text: '帮我看看今天有哪些任务，按优先级帮我安排一下',
     icon: 'calendar'
   },
   {
     id: 'goal-planning',
     label: '目标规划',
-    text: '我想制定一个学习目标计划',
+    text: '我这周想完成毕业论文初稿，帮我拆解一下每天的计划',
     icon: 'bullseye'
   },
   {
     id: 'habit-formation',
     label: '习惯养成',
-    text: '我想养成一个新的学习习惯',
+    text: '我想每天晚上花30分钟复习英语，帮我设个提醒',
     icon: 'sync'
   },
   {
     id: 'emotional-support',
     label: '情绪支持',
-    text: '我今天感觉有点累，需要一些鼓励',
+    text: '最近压力有点大，想和你聊聊',
     icon: 'heart'
   }
 ]
@@ -67,8 +67,7 @@ export const DISPATCH_RESPONSE_TYPES = {
   TASK_CREATION: 'TASK_CREATION',
   SCHEDULE_PLANNING: 'SCHEDULE_PLANNING',
   CONVERSATION: 'CONVERSATION',
-  EMOTIONAL_SUPPORT: 'EMOTIONAL_SUPPORT',
-  EXTERNAL_TOOL: 'EXTERNAL_TOOL'
+  EMOTIONAL_SUPPORT: 'EMOTIONAL_SUPPORT'
 }
 
 /**

@@ -18,7 +18,16 @@ yarn-error.log*
 ## Build output
 timer/dist/
 
+## IDE / Cursor
+.cursor/
+.vscode/
+*.code-workspace
+
 ## OS/editor files
 .DS_Store
 *.swp
 *.swo
+Thumbs.db
+
+## 美化提示词等临时文件
+美化提示词.md

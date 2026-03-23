@@ -8,14 +8,14 @@
       <LoginForm
         v-if="currentMode === 'login'"
         @switch-mode="switchMode"
-        @submit="handleLogin"
+        :on-submit="handleLogin"
       />
 
       <!-- 注册表单 -->
       <RegisterForm
         v-else
         @switch-mode="switchMode"
-        @submit="handleRegister"
+        :on-submit="handleRegister"
       />
     </div>
 
@@ -126,7 +126,11 @@ export default {
         console.error('❌ 注册失败:', error)
         const errorMessage = error.response?.data?.message || error.message || '注册失败，请重试'
         toast.error(errorMessage)
-        throw error // 让表单组件也能处理错误
+        if (error.response?.status === 409) {
+          currentMode.value = 'login'
+          router.replace('/auth/login')
+        }
+        throw error
       }
     }
 
@@ -143,40 +147,48 @@ export default {
 <style scoped>
 .auth-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 24px;
   position: relative;
   overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(84, 147, 255, 0.12), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(84, 147, 255, 0.1), transparent 28%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
 }
 
 .auth-container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(214, 223, 235, 0.9);
+  border-radius: 32px;
+  box-shadow:
+    0 28px 60px rgba(31, 58, 95, 0.08),
+    0 8px 24px rgba(84, 147, 255, 0.06);
+  padding: 44px 40px;
   width: 100%;
-  max-width: 380px;
+  max-width: 420px;
   position: relative;
   z-index: 10;
-  transition: all 0.3s ease;
+  transition: box-shadow 0.28s ease, transform 0.28s ease;
 }
 
 .auth-container:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+  box-shadow:
+    0 34px 72px rgba(31, 58, 95, 0.1),
+    0 10px 28px rgba(84, 147, 255, 0.08);
 }
 
-/* 背景装饰 */
 .bg-decoration {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   pointer-events: none;
   z-index: 1;
 }
@@ -184,100 +196,102 @@ export default {
 .bg-circle {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  animation: float 6s ease-in-out infinite;
+  background: rgba(84, 147, 255, 0.12);
+  filter: blur(2px);
+  animation: float 12s ease-in-out infinite;
 }
 
 .bg-circle-1 {
-  width: 120px;
-  height: 120px;
-  top: 10%;
-  left: 10%;
+  width: 180px;
+  height: 180px;
+  top: 9%;
+  left: 8%;
   animation-delay: 0s;
 }
 
 .bg-circle-2 {
-  width: 80px;
-  height: 80px;
-  top: 70%;
-  right: 15%;
+  width: 150px;
+  height: 150px;
+  right: 10%;
+  bottom: 9%;
   animation-delay: 2s;
 }
 
 .bg-circle-3 {
-  width: 60px;
-  height: 60px;
-  top: 30%;
-  right: 25%;
+  width: 96px;
+  height: 96px;
+  top: 22%;
+  right: 18%;
   animation-delay: 4s;
 }
 
 @keyframes float {
   0%, 100% {
     transform: translateY(0) rotate(0deg);
-    opacity: 0.7;
+    opacity: 0.55;
   }
   50% {
-    transform: translateY(-20px) rotate(180deg);
-    opacity: 1;
+    transform: translateY(-12px) rotate(6deg);
+    opacity: 0.8;
   }
 }
 
-/* 移动端适配 */
 @media (max-width: 480px) {
   .auth-page {
     padding: 16px;
   }
   
   .auth-container {
-    padding: 40px 32px;
+    min-height: auto;
+    padding: 34px 24px;
     max-width: 100%;
-    border-radius: 20px;
+    border-radius: 28px;
   }
   
-  /* 移动端隐藏部分背景装饰以提升性能 */
   .bg-circle-2,
   .bg-circle-3 {
     display: none;
   }
 }
 
-/* 平板适配 */
 @media (min-width: 481px) and (max-width: 768px) {
   .auth-container {
-    max-width: 420px;
-    padding: 44px 36px;
+    max-width: 440px;
+    padding: 40px 34px;
   }
 }
 
-/* 大屏幕优化 */
 @media (min-width: 1200px) {
   .auth-container {
-    max-width: 400px;
-    padding: 52px 44px;
+    max-width: 430px;
+    padding: 48px 42px;
   }
 }
 
-/* 高度较小的屏幕适配 */
 @media (max-height: 700px) {
   .auth-page {
-    padding: 10px;
+    padding: 14px;
   }
   
   .auth-container {
-    padding: 30px 32px;
+    padding: 30px 28px;
   }
 }
 
-/* 深色模式适配 */
 @media (prefers-color-scheme: dark) {
+  .auth-page {
+    background:
+      radial-gradient(circle at top left, rgba(84, 147, 255, 0.18), transparent 30%),
+      linear-gradient(180deg, #0f1723 0%, #152033 100%);
+  }
+
   .auth-container {
-    background: rgba(26, 26, 26, 0.95);
-    color: #fff;
+    background: rgba(15, 23, 35, 0.82);
+    border-color: rgba(125, 145, 175, 0.2);
+    color: #f8fbff;
   }
 }
 
-/* 减少动画以节省电量 */
 @media (prefers-reduced-motion: reduce) {
   .auth-container,
   .bg-circle {

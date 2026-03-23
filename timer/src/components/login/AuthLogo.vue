@@ -1,7 +1,7 @@
 <template>
   <div class="logo">
     <div class="logo-icon">
-      <font-awesome-icon icon="robot" />
+      <img :src="logoSrc" alt="Tempo logo" class="logo-image" />
     </div>
     <h1 class="app-title">Tempo</h1>
     <p class="app-subtitle">不只规划你的时间，更陪伴你的成长。</p>
@@ -9,12 +9,12 @@
 </template>
 
 <script>
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-
 export default {
   name: 'AuthLogo',
-  components: {
-    FontAwesomeIcon
+  data() {
+    return {
+      logoSrc: `${process.env.BASE_URL}tempo_icon_white.png`
+    }
   }
 }
 </script>
@@ -26,44 +26,40 @@ export default {
 }
 
 .logo-icon {
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border-radius: 16px;
+  width: 88px;
+  height: 88px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 16px;
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
-  transition: transform 0.3s ease;
+  transition: transform 0.25s ease;
 }
 
 .logo-icon:hover {
-  transform: scale(1.05);
+  transform: translateY(-1px);
 }
 
-.logo-icon svg {
-  font-size: 28px;
-  color: white;
+.logo-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .app-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #1a1a1a;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #162033;
   margin: 0 0 8px 0;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .app-subtitle {
   font-size: 14px;
-  color: #666;
+  color: #6d7b8d;
   font-weight: 400;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.55;
   max-width: 280px;
   margin: 0 auto;
 }
@@ -75,13 +71,9 @@ export default {
   }
   
   .logo-icon {
-    width: 56px;
-    height: 56px;
+    width: 76px;
+    height: 76px;
     margin-bottom: 14px;
-  }
-  
-  .logo-icon svg {
-    font-size: 24px;
   }
   
   .app-title {

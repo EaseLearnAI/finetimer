@@ -142,19 +142,25 @@ class MessageService {
       return
     }
 
+    this.addUserMessage(userInput)
+
+    await this.dispatchAndRespond(userInput)
+  }
+
+  /**
+   * 仅执行调度（不添加用户消息），供外部先展示消息后再调用
+   */
+  async dispatchAndRespond(userInput) {
+    if (this.isProcessing) return
+
     try {
       this.isProcessing = true
-      
-      // 1. 添加用户消息
-      this.addUserMessage(userInput)
-      
-      // 2. 调用AIsiri智能调度
+
       console.log('\n🚀 开始智能调度处理...')
       const response = await aisiriService.dispatch(userInput, this.currentSessionId)
-      
-      // 3. 处理智能调度响应
+
       await this.handleDispatchResponse(response)
-      
+
     } catch (error) {
       console.error('❌ 智能调度处理失败:', error)
       this.addAIMessage(
@@ -187,7 +193,7 @@ class MessageService {
       const response = await aisiriService.dispatch(voiceData.transcription, this.currentSessionId)
       
       // 3. 处理智能调度响应，生成语音回复
-      await this.handleVoiceDispatchResponse(response, voiceData)
+      await this.handleVoiceDispatchResponse(response)
       
     } catch (error) {
       console.error('❌ 语音智能调度处理失败:', error)
@@ -206,48 +212,42 @@ class MessageService {
    */
   async handleVoiceDispatchResponse(response) {
     if (!response.success) {
-      // 处理错误响应
       const errorMessage = response.error || '抱歉，系统遇到了问题。'
       this.addAIMessage(errorMessage, MESSAGE_TYPES.ERROR, { apiError: response.error })
       return
     }
 
     const { data } = response
-    
-    // AI回复保持文字形式，不转换为语音
+    const intents = data.intents || []
+
     this.addAIMessage(data.response, MESSAGE_TYPES.TEXT, {
-      intents: data.intents,
+      intents,
       servicesExecuted: data.servicesExecuted,
       taskCreated: data.taskCreated,
       scheduleAdjusted: data.scheduleAdjusted,
       emotionalSupport: data.emotionalSupport,
       processingTime: response.processingTime,
-      isVoiceInput: true // 标记这是来自语音输入的回复
+      isVoiceInput: true
     })
-    
-    // 如果有任务创建，添加任务创建消息
-    if (data.taskCreated) {
+
+    if (data.taskCreated && intents.includes('TASK_CREATION')) {
       this.addTaskCreatedMessage(data.taskCreated)
     }
 
-    // 如果有日程调整，添加日程调整消息
-    if (data.scheduleAdjusted) {
+    if (data.scheduleAdjusted && intents.includes('SCHEDULE_PLANNING')) {
       this.addScheduleAdjustedMessage(data.scheduleAdjusted)
     }
 
-    // 通知任务页刷新（如果有任务相关操作）
     if (data.taskCreated || data.scheduleAdjusted) {
       try {
         window.dispatchEvent(new CustomEvent('ai-dispatch-completed', {
           detail: {
             taskCreated: data.taskCreated,
             scheduleAdjusted: data.scheduleAdjusted,
-            intents: data.intents
+            intents
           }
         }))
-      } catch (_) {
-        // noop: 部分环境下 window 不可用
-      }
+      } catch (_) { /* window may be unavailable */ }
     }
   }
 
@@ -256,17 +256,16 @@ class MessageService {
    */
   async handleDispatchResponse(response) {
     if (!response.success) {
-      // 处理错误响应
       const errorMessage = response.error || '抱歉，系统遇到了问题。'
       this.addAIMessage(errorMessage, MESSAGE_TYPES.ERROR, { apiError: response.error })
       return
     }
 
     const { data } = response
-    
-    // 添加AI回复
+    const intents = data.intents || []
+
     this.addAIMessage(data.response, MESSAGE_TYPES.TEXT, {
-      intents: data.intents,
+      intents,
       servicesExecuted: data.servicesExecuted,
       taskCreated: data.taskCreated,
       scheduleAdjusted: data.scheduleAdjusted,
@@ -274,29 +273,24 @@ class MessageService {
       processingTime: response.processingTime
     })
 
-    // 如果有任务创建，添加任务创建消息
-    if (data.taskCreated) {
+    if (data.taskCreated && intents.includes('TASK_CREATION')) {
       this.addTaskCreatedMessage(data.taskCreated)
     }
 
-    // 如果有日程调整，添加日程调整消息
-    if (data.scheduleAdjusted) {
+    if (data.scheduleAdjusted && intents.includes('SCHEDULE_PLANNING')) {
       this.addScheduleAdjustedMessage(data.scheduleAdjusted)
     }
 
-    // 通知任务页刷新（如果有任务相关操作）
     if (data.taskCreated || data.scheduleAdjusted) {
       try {
         window.dispatchEvent(new CustomEvent('ai-dispatch-completed', {
           detail: {
             taskCreated: data.taskCreated,
             scheduleAdjusted: data.scheduleAdjusted,
-            intents: data.intents
+            intents
           }
         }))
-      } catch (_) {
-        // noop: 部分环境下 window 不可用
-      }
+      } catch (_) { /* window may be unavailable */ }
     }
   }
 
@@ -305,8 +299,9 @@ class MessageService {
    */
   addTaskCreatedMessage(task) {
     let message = `✅ 任务已创建：${task.title}`
-    if (task.scheduledTime) {
-      message += `，安排在 ${task.date} ${task.scheduledTime}`
+    const displayTime = task.scheduledTime || task.timeBlock?.startTime || task.time
+    if (displayTime) {
+      message += `，安排在 ${task.date} ${displayTime}`
     }
     
     this.addAIMessage(message, MESSAGE_TYPES.TASK_CREATED, {
@@ -318,9 +313,17 @@ class MessageService {
    * 添加日程调整消息
    */
   addScheduleAdjustedMessage(scheduleInfo) {
-    const message = '⏰ 日程已根据你的需求进行调整'
-    
-    this.addAIMessage(message, MESSAGE_TYPES.SCHEDULE_ADJUSTED, {
+    const executed = scheduleInfo?.executed
+    const parts = ['⏰ 日程已调整']
+    if (executed) {
+      const ops = []
+      if (executed.updated?.length) ops.push(`更新 ${executed.updated.length} 个任务`)
+      if (executed.created?.length) ops.push(`新增 ${executed.created.length} 个任务`)
+      if (executed.deleted?.length) ops.push(`清理 ${executed.deleted.length} 个任务`)
+      if (ops.length) parts.push(`（${ops.join('，')}）`)
+    }
+
+    this.addAIMessage(parts.join(''), MESSAGE_TYPES.SCHEDULE_ADJUSTED, {
       scheduleInfo: scheduleInfo
     })
   }

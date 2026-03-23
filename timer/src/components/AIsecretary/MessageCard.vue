@@ -2,7 +2,7 @@
   <div class="message"
     :class="{ 'user-message': message.isUser, 'ai-message': !message.isUser }">
     <div v-if="!message.isUser" class="avatar">
-      <font-awesome-icon icon="robot" />
+      <img :src="aiAssistantLogo" alt="AI assistant" class="avatar-image" />
     </div>
     <div class="message-content">
       <!-- 普通文本消息 -->
@@ -150,6 +150,10 @@ export default {
     }
   },
   computed: {
+    aiAssistantLogo() {
+      return `${process.env.BASE_URL}ai_time_manager_logo_v1.png`
+    },
+
     // 判断消息类型
     isTextMessage() {
       return !this.message.type || this.message.type === MESSAGE_TYPES.TEXT
@@ -267,20 +271,29 @@ export default {
 .avatar {
   width: 40px;
   height: 40px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
   margin-right: 12px;
   flex-shrink: 0;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
 }
 
 .user-avatar {
   background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
   margin-right: 0;
   margin-left: 12px;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 12px;
 }
 
 .message-content {

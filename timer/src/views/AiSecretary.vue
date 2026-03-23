@@ -28,7 +28,7 @@
       <!-- Typing indicator -->
       <div v-if="isProcessing" class="message ai-message">
         <div class="avatar">
-          <font-awesome-icon icon="robot" />
+          <img :src="aiAssistantLogo" alt="AI assistant" class="avatar-image" />
         </div>
         <div class="message-content">
           <div class="typing-indicator">
@@ -103,6 +103,7 @@ export default {
   },
   data() {
     return {
+      aiAssistantLogo: `${process.env.BASE_URL}ai_time_manager_logo_v1.png`,
       isTyping: false,
       messages: [],
       quickActions: QUICK_ACTIONS,
@@ -139,13 +140,20 @@ export default {
         try {
           log.user('发送文本消息', { message: message })
           
-          // 显示打字状态
+          const text = message.trim()
+
+          // 1. 先展示用户消息
+          this.messageService.addUserMessage(text)
+          this.updateMessages()
+          this.$nextTick(() => this.scrollToBottom())
+
+          // 2. 显示加载动画
           this.isTyping = true
           
-          // 处理用户输入 - 使用智能调度系统
-          await this.messageService.processUserInput(message.trim())
+          // 3. 执行调度（不再重复添加用户消息）
+          await this.messageService.dispatchAndRespond(text)
           
-          // 更新消息列表
+          // 4. 更新消息列表（加入 AI 回复）
           this.updateMessages()
           
           // 增加心动值
@@ -623,20 +631,29 @@ export default {
 .avatar {
   width: 40px;
   height: 40px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
   margin-right: 12px;
   flex-shrink: 0;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
 }
 
 .user-avatar {
   background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
   margin-right: 0;
   margin-left: 12px;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 12px;
 }
 
 .message-content {

@@ -90,8 +90,14 @@ export default {
   components: {
     FontAwesomeIcon
   },
-  emits: ['switch-mode', 'submit'],
-  setup(props, { emit }) {
+  props: {
+    onSubmit: {
+      type: Function,
+      required: true
+    }
+  },
+  emits: ['switch-mode'],
+  setup(props) {
     // 表单数据
     const formData = reactive({
       phoneNumber: '',
@@ -173,11 +179,7 @@ export default {
           password: '***'
         })
         
-        const maybePromise = emit('submit', { ...formData })
-        // 兼容父级异步处理
-        if (maybePromise && typeof maybePromise.then === 'function') {
-          await maybePromise
-        }
+        await props.onSubmit({ ...formData })
         // 成功消息由父组件 toast 提示，这里仅在确认为成功时显示
         // showMessage('登录成功！', 'success')
         
@@ -218,10 +220,11 @@ export default {
 
 .form-label {
   display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #445166;
+  margin-bottom: 10px;
+  letter-spacing: 0.01em;
 }
 
 .input-wrapper {
@@ -230,25 +233,27 @@ export default {
 
 .form-input {
   width: 100%;
-  padding: 16px 20px 16px 48px;
-  border: 2px solid #e1e5e9;
-  border-radius: 12px;
+  min-height: 56px;
+  padding: 16px 18px 16px 48px;
+  border: 1px solid #d9e1ec;
+  border-radius: 16px;
   font-size: 16px;
-  transition: all 0.3s ease;
-  background: #fafbfc;
+  color: #162033;
+  transition: border-color 0.24s ease, box-shadow 0.24s ease, background-color 0.24s ease;
+  background: #f8fafc;
   box-sizing: border-box;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #667eea;
-  background: white;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  border-color: #4c97ff;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(76, 151, 255, 0.14);
 }
 
 .form-input.error {
-  border-color: #e74c3c;
-  background: #fdf2f2;
+  border-color: #ef6b6b;
+  background: #fff7f7;
 }
 
 .input-icon {
@@ -256,8 +261,8 @@ export default {
   left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: #8e9196;
-  font-size: 16px;
+  color: #8ca0b8;
+  font-size: 15px;
   z-index: 1;
 }
 
@@ -268,7 +273,7 @@ export default {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #8e9196;
+  color: #8ca0b8;
   cursor: pointer;
   padding: 4px;
   font-size: 16px;
@@ -276,30 +281,33 @@ export default {
 }
 
 .password-toggle:hover {
-  color: #667eea;
+  color: #2f7cf6;
 }
 
 .auth-btn {
   width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  min-height: 54px;
+  padding: 15px 18px;
+  background: linear-gradient(180deg, #4c97ff 0%, #2f7cf6 100%);
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 16px;
+  border-radius: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 8px;
+  letter-spacing: 0.01em;
+  transition: transform 0.24s ease, box-shadow 0.24s ease, opacity 0.24s ease;
+  margin-top: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  box-shadow: 0 14px 24px rgba(47, 124, 246, 0.22);
 }
 
 .auth-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 18px 32px rgba(47, 124, 246, 0.26);
 }
 
 .auth-btn:active {
@@ -307,14 +315,14 @@ export default {
 }
 
 .auth-btn:disabled {
-  opacity: 0.7;
+  opacity: 0.58;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .auth-btn.loading {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .btn-icon {
@@ -322,9 +330,9 @@ export default {
 }
 
 .message {
-  margin-top: 16px;
-  padding: 12px 16px;
-  border-radius: 8px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
   font-size: 14px;
   display: flex;
   align-items: center;
@@ -333,15 +341,15 @@ export default {
 }
 
 .message.error {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background: #fff5f5;
+  color: #cf4545;
+  border: 1px solid #ffd9d9;
 }
 
 .message.success {
-  background: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
+  background: #f2fbf6;
+  color: #248a58;
+  border: 1px solid #ccefd9;
 }
 
 .message-icon {
@@ -349,7 +357,7 @@ export default {
 }
 
 .error-message {
-  color: #e74c3c;
+  color: #d95d5d;
   font-size: 13px;
   margin-top: 6px;
   display: flex;
@@ -358,17 +366,17 @@ export default {
 }
 
 .switch-mode {
-  margin-top: 24px;
+  margin-top: 26px;
   font-size: 14px;
-  color: #666;
+  color: #7b8798;
   text-align: center;
 }
 
 .switch-link {
-  color: #667eea;
+  color: #2f7cf6;
   background: none;
   border: none;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   text-decoration: none;
   padding: 0;
@@ -376,7 +384,7 @@ export default {
 }
 
 .switch-link:hover {
-  text-decoration: underline;
+  color: #1969ea;
 }
 
 @keyframes slideIn {

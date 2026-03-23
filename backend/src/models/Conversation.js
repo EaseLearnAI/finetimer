@@ -40,7 +40,7 @@ const conversationSchema = new mongoose.Schema({
   // 意图识别结果（仅用户消息有此字段）
   intent: {
     type: String,
-    enum: ['CONVERSATION', 'TASK_CREATION', 'SCHEDULE_PLANNING', 'EXTERNAL_TOOL'],
+    enum: ['CONVERSATION', 'TASK_CREATION', 'SCHEDULE_PLANNING'],
     index: true
   },
   

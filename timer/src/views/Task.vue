@@ -118,7 +118,7 @@
       class="ai-assistant-btn" 
       @click="goToAISecretary"
     >
-      <font-awesome-icon icon="robot" />
+      <img :src="aiAssistantLogo" alt="AI assistant" class="ai-assistant-icon" />
     </div>
     
     <!-- Tab Bar -->
@@ -148,6 +148,7 @@ export default {
   },
   data() {
     return {
+      aiAssistantLogo: `${process.env.BASE_URL}ai_time_manager_logo_v1.png`,
       currentView: 'time',
       currentTimeSegment: 'morning', // 当前选中的时间段
       sidebarOpen: false,
@@ -695,13 +696,13 @@ export default {
       console.log('🎯 [TaskPage] 收到AI计划生成事件，刷新任务列表');
       this.refreshTasks();
     }
-    window.addEventListener('ai-plan-generated', this._aiPlanHandler);
+    window.addEventListener('ai-dispatch-completed', this._aiPlanHandler);
     
 
   },
   beforeUnmount() {
     if (this._aiPlanHandler) {
-      window.removeEventListener('ai-plan-generated', this._aiPlanHandler)
+      window.removeEventListener('ai-dispatch-completed', this._aiPlanHandler)
       this._aiPlanHandler = null
     }
   }
@@ -856,28 +857,34 @@ export default {
   right: 20px;
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 24px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(31, 41, 55, 0.12);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 100;
   user-select: none;
   touch-action: none;
+  overflow: hidden;
 }
 
 .ai-assistant-btn:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 12px 28px rgba(31, 41, 55, 0.18);
 }
 
 .ai-assistant-btn:active {
   transform: scale(0.95);
+}
+
+.ai-assistant-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 @media (max-width: 430px) {
