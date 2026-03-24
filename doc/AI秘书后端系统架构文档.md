@@ -143,7 +143,7 @@ classDiagram
 | `userInput` | 覆盖 | 当前用户输入文本 |
 | `primaryIntent` | 覆盖 | 主意图 |
 | `detectedIntents` | 覆盖 | 所有检测到的意图数组 |
-| `emotionState` | 覆盖 | `{emotion, confidence, triggers}` |
+| `emotionState` | 覆盖 | `{emotion, confidence, triggers, context}` |
 | `extractedEntities` | 覆盖 | `{tasks[], time, location, date}` |
 | `agentResults` | **合并** | 各 agent 按 key 写入结果 |
 | `userProfile` | 覆盖 | 用户画像（从 MongoDB 加载） |
@@ -188,14 +188,14 @@ flowchart TD
 
 | 情绪 | 描述 |
 |------|------|
-| `happy` | 开心、愉悦 |
-| `sad` | 悲伤、低落 |
-| `angry` | 愤怒、烦躁 |
-| `anxious` | 焦虑、紧张 |
-| `neutral` | 平静、无明显情绪 |
-| `excited` | 兴奋、激动 |
-| `tired` | 疲惫、倦怠 |
-| `confused` | 困惑、迷茫 |
+| `happy` | 开心、兴奋、满足、成就感 |
+| `sad` | 难过、失落、沮丧、心痛 |
+| `anxious` | 焦虑、担心、不安、恐惧 |
+| `stressed` | 压力大、紧张、烦躁、崩溃感 |
+| `tired` | 疲惫、困倦、无力、倦怠 |
+| `angry` | 生气、愤怒、恼火、委屈 |
+| `confused` | 迷茫、犹豫、不知所措 |
+| `neutral` | 平静、正常、理性 |
 
 ---
 
@@ -396,17 +396,16 @@ backend/src/AIsiri/
 │   └── logger.js                    # Winston 日志 (按日轮转)
 │
 ├── tests/                           # 🧪 测试
-│   ├── latencyTest.js               # 多场景延迟测试
 │   ├── intentTest.js                # 意图识别准确率测试
 │   ├── emotionTest.js               # 情绪识别准确率测试
+│   ├── latencyTest.js               # 多场景延迟测试
 │   ├── userBehaviorTest.js          # 端到端用户行为模拟
 │   ├── e2e-verify.sh               # 端到端验证脚本
 │   └── testPlan.md                  # 测试方案文档
 │
-├── docs/                            # 📄 技术文档
-│   └── 技术选型对比报告.md
+├── docs/                            # 📄 技术文档（开发笔记）
 │
-└── logs/                            # 📋 运行日志 (运行时生成)
+└── logs/                            # 📋 运行日志 (运行时生成，gitignore)
 ```
 
 ---

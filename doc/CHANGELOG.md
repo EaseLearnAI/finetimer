@@ -4,6 +4,38 @@
 
 ---
 
+## [v3.0.2] - 2026-03-24 — 二次审计：清理废弃文件 & 修正文档不一致
+
+### 删除文件
+
+| 文件 | 说明 |
+|---|---|
+| `backend/src/AIsiri/prompt/conversation.js` | 旧对话 Prompt 模板，无任何代码引用（死代码） |
+| `backend/src/utils/mcpClient.js` | 旧 MCP 客户端封装，引用了已删除的 `../../mcp` 模块 |
+| `backend/src/tests/long-term-memory-test.js` | 空文件 |
+| `backend/src/AIsiri/docs/对话服务API文档.md` | 旧对话服务文档，功能已删除 |
+| `backend/src/AIsiri/docs/对话服务项目总结.md` | 同上 |
+| `backend/src/AIsiri/docs/高德地图MCP` | 高德 MCP 文档，功能已删除 |
+| `backend/src/AIsiri/docs/问题/V2/MCP` | MCP 问题记录 |
+| `backend/src/AIsiri/docs/问题/V2/MCP.md` | 同上 |
+| `backend/src/AIsiri/docs/LangChain架构思维导图.svg` | 已迁移到 LangGraph，旧图过时 |
+| `backend/src/AIsiri/docs/API文档.md` | 旧 API 文档，已被 `doc/AI秘书后端系统架构文档.md` 替代 |
+
+### 修改文件
+
+| 文件 | 变更说明 |
+|---|---|
+| `doc/AI秘书后端系统架构文档.md` | 修正 emotionState 字段缺少 context；修正 8 类情绪（excited→stressed）；移除目录结构中已删除的 prompt/ 目录 |
+
+### 验证结果
+
+- 后端 `app.js` 加载零错误，services 列表正确显示 5 个 agent
+- 前端编译零错误
+- dispatch/status 端点返回正确数据
+- 全代码 grep 扫描确认零废弃引用残留
+
+---
+
 ## [v3.0.1] - 2026-03-23 — 清理残留的 EXTERNAL_TOOL 引用
 
 ### 修复 Bug
