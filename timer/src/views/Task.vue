@@ -32,30 +32,21 @@
     <div class="content">
       <!-- Time Blocks View -->
       <div v-if="currentView === 'time'" class="time-view-container">
-        <!-- Time Segment Selector -->
-        <div class="time-segment-section">
-          <div class="section-title">
-            <h3>时间段</h3>
-            <a href="/task-collections" class="view-all-link">任务集</a>
-          </div>
-          <div class="segmented">
-            <button 
-              v-for="segment in timeSegments"
-              :key="segment.value"
-              :class="{ active: currentTimeSegment === segment.value }"
-              @click="switchTimeSegment(segment.value)"
-            >
-              {{ segment.label }}
-            </button>
+        <!-- Timeline Date Bar -->
+        <div class="timeline-date-bar">
+          <h3 class="date-title">{{ todayDateStr }}</h3>
+          <div class="date-bar-right">
+            <router-link to="/task-collections" class="view-all-link">任务集</router-link>
+            <button class="scroll-now-btn" @click="scrollToNow">回到现在</button>
           </div>
         </div>
         
         <!-- Time Blocks -->
         <TaskTimeBlocks
-          :time-blocks="filteredTimeBlocks"
+          ref="timelineRef"
+          :time-blocks="timeBlocks"
           @task-click="openPomodoro"
           @task-toggle="toggleTask"
-          @toggle-collapse="toggleTimeBlockCollapse"
         />
       </div>
       
@@ -150,7 +141,7 @@ export default {
     return {
       aiAssistantLogo: `${process.env.BASE_URL}ai_time_manager_logo_v1.png`,
       currentView: 'time',
-      currentTimeSegment: 'morning', // 当前选中的时间段
+      currentTimeSegment: 'morning',
       sidebarOpen: false,
       showAddModal: false,
       timeBlocks: [],
@@ -196,16 +187,13 @@ export default {
     }
   },
   computed: {
-    filteredTimeBlocks() {
-      // 根据当前选中的时间段过滤时间块
-      return this.timeBlocks.filter(block => {
-        const segmentMap = {
-          'morning': ['morning'],
-          'afternoon': ['afternoon'],
-          'evening': ['evening']
-        };
-        return segmentMap[this.currentTimeSegment]?.includes(block.timeBlockType);
-      });
+    todayDateStr() {
+      const now = new Date()
+      const m = now.getMonth() + 1
+      const d = now.getDate()
+      const weekdays = ['日', '一', '二', '三', '四', '五', '六']
+      const w = weekdays[now.getDay()]
+      return `今天 · ${m}月${d}日 周${w}`
     },
     currentUserId() {
       const user = JSON.parse(localStorage.getItem('user') || 'null')
@@ -216,10 +204,8 @@ export default {
     this.fetchTasks()
   },
   activated() {
-    // 若使用keep-alive，则返回时自动刷新
     this.fetchTasks()
-    // 返回时也自动切换到对应时间段
-    this.autoSwitchTimeSegment()
+    this.scrollToNow()
   },
   methods: {
     handleSettingClick(setting) {
@@ -259,9 +245,10 @@ export default {
           return
         }
 
-        // 直接获取所有任务，不再按日期过滤
-        console.log('📋 [TaskPage] 获取所有任务...');
-        const response = await api.tasks.getAllTasks({ userId })
+        const now = new Date()
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+        console.log('📋 [TaskPage] 获取今日任务...', todayStr);
+        const response = await api.tasks.getAllTasks({ userId, date: todayStr })
         console.log('📋 [TaskPage] 任务响应:', response)
         
         if (response.success && response.data) {
@@ -286,25 +273,24 @@ export default {
     processTasks(tasks) {
       console.log('📊 [TaskPage] 开始处理任务数据:', tasks.length);
       
-      // 初始化时间块，支持更细分的时间段
       this.timeBlocks = [
         {
           id: 1,
-          label: '早晨 0:00 - 8:00',
+          label: '上午 6:00 - 12:00',
           timeBlockType: 'morning',
           tasks: [],
           collapsed: false
         },
         {
           id: 2,
-          label: '上午 8:00 - 16:00',
+          label: '下午 12:00 - 18:00',
           timeBlockType: 'afternoon',
           tasks: [],
           collapsed: false
         },
         {
           id: 3,
-          label: '晚上 16:00 - 24:00',
+          label: '晚上 18:00 - 24:00',
           timeBlockType: 'evening',
           tasks: [],
           collapsed: false
@@ -339,11 +325,11 @@ export default {
           const hour = parseInt(task.timeBlock.startTime.split(':')[0]);
           taskTimeDisplay = `${task.timeBlock.startTime} - ${task.timeBlock.endTime || this.addHour(task.timeBlock.startTime)}`;
           
-          if (hour >= 0 && hour < 8) {
+          if (hour >= 6 && hour < 12) {
             targetTimeBlockType = 'morning';
-          } else if (hour >= 8 && hour < 16) {
+          } else if (hour >= 12 && hour < 18) {
             targetTimeBlockType = 'afternoon';
-          } else if (hour >= 16 && hour < 24) {
+          } else if ((hour >= 18 && hour < 24) || hour < 6) {
             targetTimeBlockType = 'evening';
           }
           console.log(`🎯 [TaskPage] AI生成任务"${task.title}"根据startTime计算时间块类型: ${targetTimeBlockType}`);
@@ -352,11 +338,11 @@ export default {
           const hour = parseInt(task.time.split(':')[0]);
           taskTimeDisplay = `${task.time} - ${this.addHour(task.time)}`;
           
-          if (hour >= 0 && hour < 8) {
+          if (hour >= 6 && hour < 12) {
             targetTimeBlockType = 'morning';
-          } else if (hour >= 8 && hour < 16) {
+          } else if (hour >= 12 && hour < 18) {
             targetTimeBlockType = 'afternoon';
-          } else if (hour >= 16 && hour < 24) {
+          } else if ((hour >= 18 && hour < 24) || hour < 6) {
             targetTimeBlockType = 'evening';
           }
           console.log(`⏰ [TaskPage] 用户生成任务"${task.title}"根据time计算时间块类型: ${targetTimeBlockType}`);
@@ -414,7 +400,7 @@ export default {
       this.timeBlocks = [
         {
           id: 1,
-          label: '早晨 0:00 - 8:00',
+          label: '上午 6:00 - 12:00',
           timeBlockType: 'morning',
           tasks: [
             {
@@ -423,15 +409,7 @@ export default {
               time: '7:30 - 8:30',
               priority: 'high',
               completed: false
-            }
-          ],
-          collapsed: false
-        },
-        {
-          id: 2,
-          label: '上午 8:00 - 16:00',
-          timeBlockType: 'afternoon',
-          tasks: [
+            },
             {
               id: 2,
               title: '考研数学复习',
@@ -445,7 +423,15 @@ export default {
               time: '11:00 - 12:00',
               priority: 'medium',
               completed: false
-            },
+            }
+          ],
+          collapsed: false
+        },
+        {
+          id: 2,
+          label: '下午 12:00 - 18:00',
+          timeBlockType: 'afternoon',
+          tasks: [
             {
               id: 4,
               title: '专业课笔记整理',
@@ -458,10 +444,10 @@ export default {
         },
         {
           id: 3,
-          label: '晚上 16:00 - 24:00',
+          label: '晚上 18:00 - 24:00',
           timeBlockType: 'evening',
           tasks: [],
-          collapsed: true // 初始没有任务，设为折叠
+          collapsed: false
         }
       ]
       
@@ -652,29 +638,13 @@ export default {
       })
     },
     
-    // 切换时间段
-    switchTimeSegment(segment) {
-      console.log('🔄 [TaskPage] 切换时间段:', segment);
-      this.currentTimeSegment = segment;
-    },
-    
-    // 根据当前时间自动切换到对应时间段
-    autoSwitchTimeSegment() {
-      const now = new Date();
-      const currentHour = now.getHours();
-      
-      let targetSegment = 'morning'; // 默认早上
-      
-      if (currentHour >= 0 && currentHour < 8) {
-        targetSegment = 'morning';
-      } else if (currentHour >= 8 && currentHour < 16) {
-        targetSegment = 'afternoon';
-      } else if (currentHour >= 16 && currentHour < 24) {
-        targetSegment = 'evening';
-      }
-      
-      console.log(`🕐 [TaskPage] 当前时间: ${currentHour}:00, 自动切换到: ${targetSegment}`);
-      this.currentTimeSegment = targetSegment;
+    // 滚动时间轴到当前时间
+    scrollToNow() {
+      this.$nextTick(() => {
+        if (this.$refs.timelineRef) {
+          this.$refs.timelineRef.scrollToNow()
+        }
+      })
     },
     
     // 跳转到AI助手页面
@@ -687,23 +657,50 @@ export default {
     console.log('🔄 [TaskPage] 组件挂载，开始获取任务...');
     // 页面加载时立即获取任务
     this.fetchTasks();
-    
-    // 根据当前时间自动切换到对应时间段
-    this.autoSwitchTimeSegment();
-    
-    // 监听AI生成计划事件，自动刷新任务列表
+
+    // 时间轴自动滚动到当前时间
+    this.scrollToNow();
+
+    // 监听AI生成计划事件，自动刷新任务列表（同路由时有效）
     this._aiPlanHandler = () => {
       console.log('🎯 [TaskPage] 收到AI计划生成事件，刷新任务列表');
       this.refreshTasks();
     }
     window.addEventListener('ai-dispatch-completed', this._aiPlanHandler);
-    
 
+    // 监听 pageshow 事件：处理手机端 bfcache 返回（浏览器直接恢复旧 DOM，不触发 created/mounted）
+    this._pageshowHandler = (event) => {
+      if (event.persisted) {
+        console.log('🔙 [TaskPage] 检测到 bfcache 返回，强制刷新任务列表');
+        this.fetchTasks();
+        return;
+      }
+      // 即使不是 bfcache 返回，也检查 localStorage 标记（跨路由刷新）
+      const flag = localStorage.getItem('aisiri_tasks_updated');
+      if (flag) {
+        console.log('🔔 [TaskPage] 检测到 AI 任务更新标记，刷新任务列表');
+        localStorage.removeItem('aisiri_tasks_updated');
+        this.fetchTasks();
+      }
+    };
+    window.addEventListener('pageshow', this._pageshowHandler);
+
+    // 也检查一次 localStorage 标记（路由切换回来时用）
+    const flag = localStorage.getItem('aisiri_tasks_updated');
+    if (flag) {
+      console.log('🔔 [TaskPage] mounted 检测到 AI 任务更新标记，已触发刷新');
+      localStorage.removeItem('aisiri_tasks_updated');
+      // fetchTasks 已经在上面执行，不重复调用
+    }
   },
   beforeUnmount() {
     if (this._aiPlanHandler) {
-      window.removeEventListener('ai-dispatch-completed', this._aiPlanHandler)
-      this._aiPlanHandler = null
+      window.removeEventListener('ai-dispatch-completed', this._aiPlanHandler);
+      this._aiPlanHandler = null;
+    }
+    if (this._pageshowHandler) {
+      window.removeEventListener('pageshow', this._pageshowHandler);
+      this._pageshowHandler = null;
     }
   }
 }
@@ -909,90 +906,64 @@ export default {
   }
 }
 
-/* 时间段选择器样式 */
+/* 时间轴视图容器 */
 .time-view-container {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.time-segment-section {
-  padding: 16px 20px 8px;
+/* 日期栏 */
+.timeline-date-bar {
+  padding: 12px 20px 10px;
   background: white;
-  border-bottom: 1px solid #f2f2f7;
-}
-
-.section-title {
+  border-bottom: 0.5px solid #e5e5ea;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
-.section-title h3 {
-  font-size: 18px;
+.date-title {
+  font-size: 17px;
   font-weight: 600;
   color: #1d1d1f;
   margin: 0;
 }
 
+.date-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .view-all-link {
-  font-size: 14px;
+  font-size: 13px;
   color: #007aff;
   text-decoration: none;
   font-weight: 500;
 }
 
-.view-all-link:hover {
-  text-decoration: underline;
-}
-
-/* 分段控件样式 - 参考home111.html */
-.segmented {
-  display: flex;
-  background: #f2f2f7;
-  border-radius: 12px;
-  padding: 2px;
-  width: 100%;
-}
-
-.segmented button {
-  flex: 1;
-  padding: 10px 16px;
+.scroll-now-btn {
+  font-size: 13px;
+  color: #667eea;
+  background: none;
   border: none;
-  background: transparent;
-  border-radius: 10px;
-  font-size: 14px;
   font-weight: 500;
-  color: #8e8e93;
   cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  font-family: inherit;
+  padding: 4px 0;
+}
+.scroll-now-btn:active {
+  opacity: 0.6;
 }
 
-.segmented button.active {
-  background: white;
-  color: #1d1d1f;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
-}
-
-.segmented button:hover:not(.active) {
-  color: #1d1d1f;
-}
-
-/* 响应式适配 */
 @media (max-width: 430px) {
-  .time-segment-section {
-    padding: 12px 16px 6px;
+  .timeline-date-bar {
+    padding: 10px 16px 8px;
   }
-  
-  .section-title h3 {
-    font-size: 16px;
-  }
-  
-  .segmented button {
-    padding: 8px 12px;
-    font-size: 13px;
+  .date-title {
+    font-size: 15px;
   }
 }
 </style>

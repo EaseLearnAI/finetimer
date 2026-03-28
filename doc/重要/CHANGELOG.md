@@ -4,6 +4,33 @@
 
 ---
 
+## [v3.5.1] - 2026-03-28 — 前端任务刷新修复 + 调度全权限恢复
+
+### 修复 Bug
+
+| 编号 | 问题 | 根因 | 修复方式 | 涉及文件 |
+|------|------|------|---------|---------|
+| B-31 | AI 说"日程已调整"后，切回任务页面依然显示旧时间，DB 明明已写入 | 手机端浏览器按返回键时触发 bfcache（back/forward cache），浏览器直接恢复旧 DOM，Vue 的 `created()`/`mounted()` 完全不执行；跨路由时 `ai-dispatch-completed` 事件也因 Task.vue 未挂载而丢失 | ① Task.vue `mounted()` 监听 `pageshow` 事件，若 `event.persisted=true`（bfcache 恢复）则强制 `fetchTasks()`；② messageService.js 在任务更新时写入 `localStorage.aisiri_tasks_updated` 标记；③ Task.vue `mounted()` 检测该标记并刷新，清除标记 | `timer/src/views/Task.vue`, `timer/src/AIsiri/services/messageService.js` |
+| B-32 | v3.5.0 错误地将情绪触发调度限制为"只能在今日内调整时段"，用户明确要求 AI 拥有把任务移到明天的完整权限 | v3.5.0 中 scheduleAgent 的 emotionTriggeredSchedule prompt 加了"尽量不移到明天"的限制 | 恢复原始 prompt：移到明天/后天完全允许，降低优先级或推迟均可 | `backend/src/AIsiri/agents/scheduleAgent.js` |
+
+### 修改文件
+
+| 文件 | 变更说明 |
+|------|---------|
+| `timer/src/views/Task.vue` | mounted() 新增 pageshow 监听（处理 bfcache）+ localStorage 标记检测；beforeUnmount 清理 pageshow 监听 |
+| `timer/src/AIsiri/services/messageService.js` | handleVoiceDispatchResponse 和 handleDispatchResponse 中，任务更新时设置 `aisiri_tasks_updated` localStorage 标记 |
+| `backend/src/AIsiri/agents/scheduleAgent.js` | 恢复情绪触发调度全日期权限（可移到明天），去掉 v3.5.0 的"今日内调整"限制 |
+
+### 验证逻辑
+
+| 场景 | 机制 | 效果 |
+|------|------|------|
+| 用户在 /ai-secretary 聊天后，点击底部 Tab 返回 /task | Task.vue 重新 created() → fetchTasks() + localStorage 标记检测 | 显示 DB 最新数据 |
+| 用户按手机"返回"键（bfcache 恢复旧 DOM） | pageshow 事件触发，event.persisted=true → fetchTasks() | 强制刷新，显示最新数据 |
+| AI 把任务移到明天（2026-03-29） | AI 完全有权限移到任何日期 | DB 正确写入，用户切回任务页看到该任务从今日列表消失（已移到明天） |
+
+---
+
 ## [v3.5.0] - 2026-03-28 — 记忆持久化 + 情绪触发调度优化
 
 ### 修复 Bug

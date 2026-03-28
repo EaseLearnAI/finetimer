@@ -234,12 +234,18 @@ class MessageService {
       this.addTaskCreatedMessage(data.taskCreated)
     }
 
+    if (data.taskConflicts && data.taskConflicts.length > 0) {
+      this.addConflictWarningMessage(data.taskConflicts, data.taskCreated)
+    }
+
     if (data.scheduleAdjusted && intents.includes('SCHEDULE_PLANNING')) {
       this.addScheduleAdjustedMessage(data.scheduleAdjusted)
     }
 
     if (data.taskCreated || data.scheduleAdjusted) {
       try {
+        // 设置 localStorage 标记，供 Task.vue 在跨路由返回时检测并刷新
+        localStorage.setItem('aisiri_tasks_updated', String(Date.now()));
         window.dispatchEvent(new CustomEvent('ai-dispatch-completed', {
           detail: {
             taskCreated: data.taskCreated,
@@ -277,12 +283,18 @@ class MessageService {
       this.addTaskCreatedMessage(data.taskCreated)
     }
 
+    if (data.taskConflicts && data.taskConflicts.length > 0) {
+      this.addConflictWarningMessage(data.taskConflicts, data.taskCreated)
+    }
+
     if (data.scheduleAdjusted && intents.includes('SCHEDULE_PLANNING')) {
       this.addScheduleAdjustedMessage(data.scheduleAdjusted)
     }
 
     if (data.taskCreated || data.scheduleAdjusted) {
       try {
+        // 设置 localStorage 标记，供 Task.vue 在跨路由返回时检测并刷新
+        localStorage.setItem('aisiri_tasks_updated', String(Date.now()));
         window.dispatchEvent(new CustomEvent('ai-dispatch-completed', {
           detail: {
             taskCreated: data.taskCreated,
@@ -307,6 +319,16 @@ class MessageService {
     this.addAIMessage(message, MESSAGE_TYPES.TASK_CREATED, {
       task: task
     })
+  }
+
+  /**
+   * 添加时间冲突警告消息
+   */
+  addConflictWarningMessage(conflicts, newTask) {
+    const conflictList = conflicts.map(c => `「${c.existingTitle}」`).join('、')
+    const timeStr = newTask?.time || conflicts[0]?.time || ''
+    const message = `⚠️ 时间冲突：${timeStr ? timeStr + ' ' : ''}已有 ${conflictList}，建议调整新任务时间避免冲突`
+    this.addAIMessage(message, MESSAGE_TYPES.TEXT, { isConflictWarning: true, conflicts })
   }
 
   /**

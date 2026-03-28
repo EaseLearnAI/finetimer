@@ -106,15 +106,13 @@ async function scheduleAgent(state) {
       : '暂无任务集';
 
     // 情绪触发模式：要求"减轻负担"而不是通用调度
-    // 注意：优先在今日内调整（降优先级、改到更晚的时段），避免直接移到明天导致任务从今日列表消失
     const emotionNote = emotionTriggeredSchedule
       ? `\n【情绪触发调度】用户当前情绪：${emotionState.emotion}（强度 ${emotionState.confidence}）。
-请自动帮用户减轻今日任务负担，规则如下（按优先级）：
-1. 优先将 Q3/Q4 或 priority=low/medium 的今日任务降低优先级（改为 low、quadrant 改为 4）
-2. 将今日时间较早/较难的非紧急任务移到今日更晚的时间段（如从 morning 改到 evening）
-3. 只有当今日任务已安排在深夜（21:00 之后）且确实无法推迟到今天更晚时，才考虑移到明天
-4. 不要创建任何新任务
-5. 只使用 update 或 reschedule 操作，且 suggestedDate 尽量保持 ${targetDate}（今天）`
+请自动帮用户减轻今日任务负担：
+- 将今日非紧急任务（Q3/Q4 或 priority=low）推迟到明天或后天，或降低优先级
+- 降低不重要任务的优先级（调整为 low）
+- 不要创建任何新任务
+- 只使用 reschedule 或 update 操作`
       : (emotionState.emotion !== 'neutral'
         ? `\n注意：用户当前情绪为"${emotionState.emotion}"，请适当调整任务强度。`
         : '');
@@ -140,7 +138,7 @@ ${collectionSummary}
 ${customNotesContext}
 ${emotionNote}
 
-请优先在今日内降低任务强度，尽量不移到明天，不要创建新任务。`
+请帮用户推迟或降级今日非紧急任务，不要创建新任务。`
       : `用户请求："${userInput}"
 目标日期：${targetDate}
 
