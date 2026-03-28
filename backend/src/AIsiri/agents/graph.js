@@ -17,6 +17,7 @@ const { AgentState } = require('./state');
 const { routerAgent, routeDecision } = require('./routerAgent');
 const { taskAgent } = require('./taskAgent');
 const { scheduleAgent } = require('./scheduleAgent');
+const { undoAgent } = require('./undoAgent');
 const { emotionAgent } = require('./emotionAgent');
 const { loadUserMemory, saveUserMemory } = require('./memoryAgent');
 const logger = require('../utils/logger');
@@ -29,6 +30,7 @@ function buildAgentGraph() {
   graph.addNode('router', routerAgent);
   graph.addNode('taskAgent', taskAgent);
   graph.addNode('scheduleAgent', scheduleAgent);
+  graph.addNode('undoAgent', undoAgent);
   graph.addNode('emotionAgent', emotionAgent);
   graph.addNode('saveMemory', saveUserMemory);
 
@@ -42,12 +44,14 @@ function buildAgentGraph() {
   graph.addConditionalEdges('router', routeDecision, {
     taskAgent: 'taskAgent',
     scheduleAgent: 'scheduleAgent',
+    undoAgent: 'undoAgent',
     emotionAgent: 'emotionAgent',
   });
 
   // 各专项智能体 → 情感陪伴（聚合）
   graph.addEdge('taskAgent', 'emotionAgent');
   graph.addEdge('scheduleAgent', 'emotionAgent');
+  graph.addEdge('undoAgent', 'emotionAgent');
 
   // 情感陪伴 → 保存记忆 → 结束
   graph.addEdge('emotionAgent', 'saveMemory');

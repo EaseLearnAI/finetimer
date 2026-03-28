@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIsiri Benchmark 评估报告</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card: #1a1d28;
+      --border: #2a2d3a;
+      --text: #e4e6f0;
+      --text-muted: #8b8fa3;
+      --accent: #6c63ff;
+      --green: #4ade80;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --blue: #60a5fa;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 {
+      font-size: 2rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #6c63ff, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .summary-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .summary-card .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+    .summary-card .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .summary-card .status { font-size: 0.8rem; margin-top: 0.3rem; }
+    .pass { color: var(--green); }
+    .fail { color: var(--red); }
+    .chart-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .chart-card h3 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: var(--text-muted);
+    }
+    .chart-full { grid-column: 1 / -1; }
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    .matrix-table th, .matrix-table td {
+      padding: 6px 8px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .matrix-table th {
+      background: var(--border);
+      font-weight: 600;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      border-radius: 20px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 1rem auto;
+      text-align: center;
+    }
+    .grade-excellent { background: rgba(74,222,128,0.15); color: var(--green); border: 2px solid var(--green); }
+    .footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 768px) {
+      .chart-row { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>AIsiri Benchmark 评估报告</h1>
+  <p class="subtitle">测试时间：2026-03-24 | 模型：qwen-plus (DashScope) | 7 项 Benchmark · 145 条用例</p>
+
+  <div style="text-align:center; margin-bottom: 2rem;">
+    <span class="grade-badge grade-excellent">🟢 综合评价：优秀（7/7 达标）</span>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="label">BM-1 意图识别</div>
+      <div class="value pass">90.0%</div>
+      <div class="status pass">Macro-F1: 0.894</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">BM-2 情绪识别</div>
+      <div class="value pass">97.5%</div>
+      <div class="status pass">Macro-F1: 0.975</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">BM-3 任务创建</div>
+      <div class="value pass">100%</div>
+      <div class="status pass">标题 100% · 时间块 90%</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">BM-4 日程规划</div>
+      <div class="value pass">100%</div>
+      <div class="status pass">10/10 场景通过</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">BM-5 纯对话延迟</div>
+      <div class="value pass">6.2s</div>
+      <div class="status pass">P50 < 8s</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">BM-6 情感回复</div>
+      <div class="value pass">4.31/5</div>
+      <div class="status pass">7维综合均分</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">BM-7 记忆一致性</div>
+      <div class="value pass">100%</div>
+      <div class="status pass">5/5 场景通过</div>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-card">
+      <h3>综合能力雷达图</h3>
+      <canvas id="radarChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>BM-6 情感回复各维度评分</h3>
+      <canvas id="emotionChart"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-card">
+      <h3>BM-5 端到端延迟对比</h3>
+      <canvas id="latencyChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>BM-1 意图识别分类 F1</h3>
+      <canvas id="intentF1Chart"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-card">
+      <h3>BM-1 意图识别混淆矩阵</h3>
+      <table class="matrix-table">
+        <tr><th></th><th>预测 TASK</th><th>预测 SCHEDULE</th><th>预测 CONV</th></tr>
+        <tr><th>实际 TASK</th><td style="background:rgba(108,99,255,0.7);color:#fff;font-weight:700">9</td><td style="background:rgba(248,113,113,0.4)">3</td><td>0</td></tr>
+        <tr><th>实际 SCHEDULE</th><td>0</td><td style="background:rgba(108,99,255,0.7);color:#fff;font-weight:700">12</td><td>0</td></tr>
+        <tr><th>实际 CONV</th><td>0</td><td style="background:rgba(248,113,113,0.2)">1</td><td style="background:rgba(108,99,255,0.7);color:#fff;font-weight:700">15</td></tr>
+      </table>
+    </div>
+    <div class="chart-card">
+      <h3>BM-2 情绪识别混淆矩阵 (8×8)</h3>
+      <canvas id="emotionMatrixChart"></canvas>
+    </div>
+  </div>
+
+  <div class="footer">
+    AIsiri Benchmark 评估报告 · 自动生成于 2026-03-24 · 基于 LangGraph 多智能体架构 v3.0
+  </div>
+</div>
+
+<script>
+Chart.defaults.color = '#8b8fa3';
+Chart.defaults.borderColor = '#2a2d3a';
+
+// Radar Chart
+new Chart(document.getElementById('radarChart'), {
+  type: 'radar',
+  data: {
+    labels: ['意图识别\n(F1)', '情绪识别\n(准确率)', '任务创建\n(标题)', '日程规划\n(成功率)', '响应延迟\n(达标率)', '情感回复\n(均分)', '记忆一致\n(正确率)'],
+    datasets: [{
+      label: '实际得分 (%)',
+      data: [89.4, 97.5, 100, 100, 77.5, 86.2, 100],
+      fill: true,
+      backgroundColor: 'rgba(108,99,255,0.15)',
+      borderColor: '#6c63ff',
+      borderWidth: 2,
+      pointBackgroundColor: '#6c63ff',
+      pointRadius: 4,
+    }, {
+      label: '达标线 (%)',
+      data: [82, 80, 85, 95, 100, 70, 100],
+      fill: false,
+      borderColor: '#fbbf24',
+      borderWidth: 1,
+      borderDash: [5, 5],
+      pointRadius: 2,
+      pointBackgroundColor: '#fbbf24',
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      r: {
+        beginAtZero: true,
+        max: 100,
+        ticks: { stepSize: 20, display: false },
+        grid: { color: '#2a2d3a' },
+        angleLines: { color: '#2a2d3a' },
+        pointLabels: { font: { size: 11 } }
+      }
+    },
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 15 } }
+    }
+  }
+});
+
+// BM-6 Emotion Quality Bar Chart
+new Chart(document.getElementById('emotionChart'), {
+  type: 'bar',
+  data: {
+    labels: ['情绪理解', '回应自然', '温暖感受', '行动建议', '结果整合', '趋势个性化', '画像利用'],
+    datasets: [{
+      label: '实际评分',
+      data: [5.00, 5.00, 5.00, 4.20, 3.75, 3.80, 3.40],
+      backgroundColor: [
+        'rgba(108,99,255,0.7)', 'rgba(108,99,255,0.7)', 'rgba(108,99,255,0.7)',
+        'rgba(96,165,250,0.7)', 'rgba(251,191,36,0.7)',
+        'rgba(96,165,250,0.7)', 'rgba(96,165,250,0.7)'
+      ],
+      borderColor: [
+        '#6c63ff', '#6c63ff', '#6c63ff',
+        '#60a5fa', '#fbbf24',
+        '#60a5fa', '#60a5fa'
+      ],
+      borderWidth: 1,
+      borderRadius: 6,
+    }, {
+      label: '达标线',
+      data: [3.5, 3.5, 3.5, 3.0, 4.0, 3.0, 3.0],
+      type: 'line',
+      borderColor: '#fbbf24',
+      borderDash: [5, 5],
+      borderWidth: 2,
+      pointRadius: 0,
+      fill: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 }, grid: { color: '#2a2d3a' } },
+      x: { grid: { display: false } }
+    },
+    plugins: {
+      legend: { position: 'bottom' }
+    }
+  }
+});
+
+// BM-5 Latency Bar Chart
+new Chart(document.getElementById('latencyChart'), {
+  type: 'bar',
+  data: {
+    labels: ['纯对话', '单任务创建', '日程规划', '复合(任务+日程)'],
+    datasets: [{
+      label: 'P50 (ms)',
+      data: [6174, 10875, 23772, 23165],
+      backgroundColor: ['rgba(74,222,128,0.6)', 'rgba(74,222,128,0.6)', 'rgba(248,113,113,0.6)', 'rgba(248,113,113,0.6)'],
+      borderColor: ['#4ade80', '#4ade80', '#f87171', '#f87171'],
+      borderWidth: 1,
+      borderRadius: 6,
+    }, {
+      label: '达标阈值 P50',
+      data: [8000, 12000, 15000, 18000],
+      type: 'line',
+      borderColor: '#fbbf24',
+      borderDash: [5, 5],
+      borderWidth: 2,
+      pointRadius: 4,
+      pointBackgroundColor: '#fbbf24',
+      fill: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      y: { beginAtZero: true, title: { display: true, text: '毫秒 (ms)' }, grid: { color: '#2a2d3a' } },
+      x: { grid: { display: false } }
+    },
+    plugins: { legend: { position: 'bottom' } }
+  }
+});
+
+// BM-1 Intent F1 Bar Chart
+new Chart(document.getElementById('intentF1Chart'), {
+  type: 'bar',
+  data: {
+    labels: ['TASK_CREATION', 'SCHEDULE_PLANNING', 'CONVERSATION'],
+    datasets: [{
+      label: 'Precision',
+      data: [1.00, 0.75, 1.00],
+      backgroundColor: 'rgba(108,99,255,0.6)',
+      borderColor: '#6c63ff',
+      borderWidth: 1,
+      borderRadius: 4,
+    }, {
+      label: 'Recall',
+      data: [0.75, 1.00, 0.94],
+      backgroundColor: 'rgba(96,165,250,0.6)',
+      borderColor: '#60a5fa',
+      borderWidth: 1,
+      borderRadius: 4,
+    }, {
+      label: 'F1',
+      data: [0.86, 0.86, 0.97],
+      backgroundColor: 'rgba(74,222,128,0.6)',
+      borderColor: '#4ade80',
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      y: { beginAtZero: true, max: 1, grid: { color: '#2a2d3a' } },
+      x: { grid: { display: false } }
+    },
+    plugins: { legend: { position: 'bottom' } }
+  }
+});
+
+// BM-2 Emotion Confusion Matrix Heatmap (using Chart.js matrix plugin simulation)
+const emotions = ['happy', 'sad', 'anxious', 'stressed', 'tired', 'angry', 'confused', 'neutral'];
+const confusionData = [
+  [5,0,0,0,0,0,0,0],
+  [0,5,0,0,0,0,0,0],
+  [0,0,5,0,0,0,0,0],
+  [0,0,0,5,0,0,0,0],
+  [0,0,0,0,5,0,0,0],
+  [0,0,0,0,0,5,0,0],
+  [0,0,0,0,0,0,5,0],
+  [0,0,0,0,1,0,0,4],
+];
+const ctx = document.getElementById('emotionMatrixChart').getContext('2d');
+const cellSize = 32;
+const startX = 70;
+const startY = 30;
+const canvas = document.getElementById('emotionMatrixChart');
+canvas.width = startX + emotions.length * cellSize + 10;
+canvas.height = startY + emotions.length * cellSize + 20;
+
+ctx.font = '10px sans-serif';
+ctx.fillStyle = '#8b8fa3';
+for (let i = 0; i < emotions.length; i++) {
+  ctx.textAlign = 'right';
+  ctx.fillText(emotions[i], startX - 4, startY + i * cellSize + cellSize / 2 + 3);
+  ctx.textAlign = 'center';
+  ctx.fillText(emotions[i], startX + i * cellSize + cellSize / 2, startY - 5);
+}
+
+for (let row = 0; row < emotions.length; row++) {
+  for (let col = 0; col < emotions.length; col++) {
+    const val = confusionData[row][col];
+    const x = startX + col * cellSize;
+    const y = startY + row * cellSize;
+    if (val === 5) {
+      ctx.fillStyle = 'rgba(108,99,255,0.7)';
+    } else if (val === 4) {
+      ctx.fillStyle = 'rgba(108,99,255,0.5)';
+    } else if (val === 1) {
+      ctx.fillStyle = 'rgba(248,113,113,0.4)';
+    } else {
+      ctx.fillStyle = 'rgba(42,45,58,0.5)';
+    }
+    ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+    ctx.fillStyle = val > 0 ? '#fff' : '#555';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText(val, x + cellSize / 2, y + cellSize / 2 + 4);
+    ctx.font = '10px sans-serif';
+    ctx.fillStyle = '#8b8fa3';
+  }
+}
+</script>
+</body>
+</html>

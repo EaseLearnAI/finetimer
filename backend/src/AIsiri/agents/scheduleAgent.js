@@ -11,6 +11,7 @@
 
 const Task = require('../../models/Task');
 const Collection = require('../../models/Collection');
+const UserProfile = require('../../models/UserProfile');
 const llm = require('./llmClient');
 const logger = require('../utils/logger');
 
@@ -67,7 +68,7 @@ const SCHEDULE_SYSTEM_PROMPT = `你是一个专业的时间管理调度助手。
 }`;
 
 async function scheduleAgent(state) {
-  const { userId, userInput, extractedEntities, emotionState, requestId } = state;
+  const { userId, userInput, extractedEntities, emotionState, emotionTriggeredSchedule, requestId } = state;
 
   logger.info('[ScheduleAgent] 开始日程规划', { requestId, userId });
 
@@ -104,16 +105,20 @@ async function scheduleAgent(state) {
       ? collections.map((c) => `- ${c.name}（${c.completed ? '已完成' : '进行中'}）`).join('\n')
       : '暂无任务集';
 
-    const emotionNote = emotionState.emotion !== 'neutral'
-      ? `\n注意：用户当前情绪为"${emotionState.emotion}"，请适当调整任务强度。`
-      : '';
+    // 情绪触发模式：要求"减轻负担"而不是通用调度
+    const emotionNote = emotionTriggeredSchedule
+      ? `\n【情绪触发调度】用户当前情绪：${emotionState.emotion}（强度 ${emotionState.confidence}）。
+请自动帮用户减轻今日任务负担：
+- 将今日非紧急任务（Q3/Q4 或 priority=low）推迟到明天或后天
+- 降低不重要任务的优先级（调整为 low）
+- 不要创建任何新任务
+- 只使用 reschedule 或 update 操作`
+      : (emotionState.emotion !== 'neutral'
+        ? `\n注意：用户当前情绪为"${emotionState.emotion}"，请适当调整任务强度。`
+        : '');
 
-    const result = await llm.chatJSON(
-      [
-        { role: 'system', content: SCHEDULE_SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `用户请求："${userInput}"
+    const userContent = emotionTriggeredSchedule
+      ? `用户情绪："${emotionState.emotion}"，请自动减轻今日负担（无需理会用户原始输入的字面意思）
 目标日期：${targetDate}
 
 === 今日任务（${targetDate}）===
@@ -126,8 +131,26 @@ ${otherTaskSummary}
 ${collectionSummary}
 ${emotionNote}
 
-请根据以上信息生成可执行的日程调度指令。`,
-        },
+请只推迟/降级今日非紧急任务，不要创建新任务。`
+      : `用户请求："${userInput}"
+目标日期：${targetDate}
+
+=== 今日任务（${targetDate}）===
+${todayTaskSummary}
+
+=== 其他未完成任务 ===
+${otherTaskSummary}
+
+=== 任务集 ===
+${collectionSummary}
+${emotionNote}
+
+请根据以上信息生成可执行的日程调度指令。`;
+
+    const result = await llm.chatJSON(
+      [
+        { role: 'system', content: SCHEDULE_SYSTEM_PROMPT },
+        { role: 'user', content: userContent },
       ],
       { temperature: 0.3, maxTokens: 1500, timeout: 45000 }
     );
@@ -136,8 +159,52 @@ ${emotionNote}
 
     const dedupeResults = await autoDeduplicateTasks(tasks, userId, requestId);
 
+    // 保存快照（仅在有实际推荐操作时，供撤销回退使用）
+    const recommendations = schedule.recommendations || [];
+    if (recommendations.length > 0) {
+      try {
+        const titlesToModify = new Set(
+          recommendations
+            .filter((r) => r.action === 'update' || r.action === 'reschedule')
+            .map((r) => r.taskTitle)
+        );
+        const tasksToSnapshot = tasks.filter(
+          (t) => titlesToModify.has(t.title) || Array.from(titlesToModify).some((title) => t.title.includes(title) || title.includes(t.title))
+        );
+        if (tasksToSnapshot.length > 0) {
+          const snapshot = tasksToSnapshot.map((t) => ({
+            taskId: String(t._id),
+            title: t.title,
+            date: t.date,
+            time: t.time,
+            timeBlock: t.timeBlock,
+            priority: t.priority,
+            quadrant: t.quadrant,
+          }));
+          await UserProfile.findOneAndUpdate(
+            { userId },
+            {
+              $set: {
+                lastScheduleSnapshot: {
+                  tasks: snapshot,
+                  savedAt: new Date(),
+                  description: emotionTriggeredSchedule
+                    ? `情绪调度：${emotionState.emotion}`
+                    : '用户主动调度',
+                },
+              },
+            },
+            { upsert: true }
+          );
+          logger.info('[ScheduleAgent] 快照已保存', { requestId, count: snapshot.length });
+        }
+      } catch (snapErr) {
+        logger.warn('[ScheduleAgent] 快照保存失败', { error: snapErr.message });
+      }
+    }
+
     const executionResults = await executeRecommendations(
-      schedule.recommendations || [],
+      recommendations,
       userId,
       targetDate,
       tasks,

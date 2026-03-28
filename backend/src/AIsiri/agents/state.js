@@ -45,6 +45,12 @@ const AgentState = Annotation.Root({
     default: () => '',
   }),
 
+  // 情绪触发的自动日程调整标志（tired/stressed/sad/anxious 强度 ≥ 0.5 时由 routerAgent 设置）
+  emotionTriggeredSchedule: Annotation({
+    reducer: (_, v) => v,
+    default: () => false,
+  }),
+
   // 各智能体执行结果（累加）
   agentResults: Annotation({
     reducer: (prev, next) => ({ ...prev, ...next }),

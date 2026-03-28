@@ -76,12 +76,23 @@ ${profileContext}
 - 适度展现亲和力
 
 ## 回复原则
-1. 长度控制在 100-200 字
-2. 先回应情绪，再说事务
-3. 不要使用模板化表达，每次回复都要有变化
-4. 自然地使用${assistantName}的自称
-5. 对已完成的操作（创建任务、安排日程等）自然融入确认
-6. 根据用户画像调整沟通深度和风格`;
+
+### 高效模式（满足以下所有条件时强制使用）
+条件：情绪为 neutral（平静/理性） **且** 已完成任务创建或日程调整 **且** 意图不包含纯聊天
+要求：
+- **直接确认操作结果**，50 字以内
+- **禁止**"小艾轻轻点头""心里暖暖的"等拟人化情绪性开头
+- **禁止**先讲感受再讲事务的结构
+- 示例："✅ 已帮你创建「健身」任务，安排在今晚 22:00。" 就够了
+
+### 陪伴模式（有明显情绪：非 neutral 且强度 ≥ 0.4）
+- 先回应情绪，再说事务，100-200 字
+- 不要使用模板化表达，每次回复都要有变化
+
+### 通用规则
+- 自然地使用${assistantName}的自称（高效模式下可省略）
+- 若存在时间冲突，**必须**在回复中明确提醒，建议调整时间
+- 根据用户画像调整沟通深度和风格`;
 
 function buildProfileContext(userProfile, emotionState) {
   const parts = [];
@@ -156,11 +167,28 @@ async function emotionAgent(state) {
   const resultSummary = [];
   if (agentResults.taskCreation?.success) {
     const tasks = agentResults.taskCreation.tasks || [];
-    resultSummary.push(`已创建${tasks.length}个任务：${tasks.map((t) => t.title).join('、')}`);
+    const taskDescs = tasks.map((t) => {
+      const timeStr = t.time ? ` ${t.date} ${t.time}` : (t.date ? ` ${t.date}` : '');
+      return `「${t.title}」${timeStr}`;
+    }).join('、');
+    resultSummary.push(`已创建${tasks.length}个任务：${taskDescs}`);
+
+    // 时间冲突提醒
+    const conflicts = agentResults.taskCreation.conflicts || [];
+    if (conflicts.length > 0) {
+      const conflictDescs = conflicts.map((c) => `「${c.existingTitle}」(${c.time})`).join('、');
+      resultSummary.push(`⚠️ 时间冲突：新任务与 ${conflictDescs} 时间重叠，请在回复中明确告知用户并建议调整`);
+    }
   }
   if (agentResults.schedulePlanning?.success) {
     const sched = agentResults.schedulePlanning.schedule;
     resultSummary.push(`日程安排建议：${sched.summary || '已生成'}`);
+  }
+  if (agentResults.undo?.success) {
+    resultSummary.push(`已撤销${agentResults.undo.restoredCount}个任务的调整（${agentResults.undo.description}），任务已恢复到原始状态`);
+  }
+  if (agentResults.undo?.success === false) {
+    resultSummary.push(`撤销失败：${agentResults.undo.reason}`);
   }
 
   const profileContext = buildProfileContext(userProfile, emotionState);
@@ -171,6 +199,16 @@ async function emotionAgent(state) {
 
   const conversationRound = history.filter((h) => h.messageType === 'user').length + 1;
 
+  // 判断是否使用高效模式：neutral 情绪 + 有任务/日程结果 + 非纯对话
+  const hasTaskOrScheduleResult = agentResults.taskCreation?.success || agentResults.schedulePlanning?.success;
+  const isNeutral = emotionState.emotion === 'neutral' || emotionState.confidence < 0.4;
+  const isPureConversation = primaryIntent === 'CONVERSATION' && !hasTaskOrScheduleResult;
+  const useEfficientMode = isNeutral && hasTaskOrScheduleResult && !isPureConversation;
+
+  const modeHint = useEfficientMode
+    ? '\n【⚡ 高效模式：请直接简洁确认操作结果，50字以内，禁止情绪性开头】'
+    : '';
+
   const userPrompt = `${historyText ? `最近对话（当前第${conversationRound}轮）：\n${historyText}\n\n` : `这是第${conversationRound}轮对话。\n\n`}用户说："${userInput}"
 
 情绪状态：${emotionState.emotion}（强度：${emotionState.confidence}）
@@ -178,8 +216,8 @@ ${emotionState.triggers.length > 0 ? `情绪触发因素：${emotionState.trigge
 ${emotionState.context ? `情绪上下文：${emotionState.context}` : ''}
 
 ${resultSummary.length > 0 ? `已完成的操作：\n${resultSummary.join('\n')}` : '无额外操作'}
-
-请生成一个温暖、自然的回复。`;
+${modeHint}
+请生成回复。`;
 
   try {
     const result = await llm.chat(
