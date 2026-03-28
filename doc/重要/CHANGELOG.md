@@ -4,6 +4,38 @@
 
 ---
 
+## [v3.5.3] - 2026-03-29 — 任务创建自动推断优先级和象限
+
+### 新功能
+
+| 项目 | 说明 |
+|------|------|
+| 智能优先级分配 | AI 创建任务时，根据任务标题语义自动推断 priority（low/medium/high）和 quadrant（1-4），不再硬编码 medium/Q1 |
+
+### 修改文件
+
+| 文件 | 变更说明 |
+|------|---------|
+| `backend/src/AIsiri/agents/routerAgent.js` | ROUTER_SYSTEM_PROMPT 中 tasks 改为对象数组格式（含 title/priority/quadrant），新增四象限判断规则 |
+| `backend/src/AIsiri/agents/taskAgent.js` | 读取 task 对象的 priority/quadrant 字段，兼容旧字符串格式 |
+
+### 四象限判断规则
+
+| priority | 触发条件 |
+|---------|---------|
+| high | 有 deadline/考试/面试/汇报/紧急字眼 |
+| low | 娱乐/休闲/随时可推迟 |
+| medium | 其余情况 |
+
+| quadrant | 含义 | 示例 |
+|---------|------|------|
+| Q1 | 重要且紧急 | 考试/面试/汇报/客户合同 |
+| Q2 | 重要不紧急 | 学习/健身/项目规划 |
+| Q3 | 紧急不重要 | 回复消息/取快递/行政杂务 |
+| Q4 | 不重要不紧急 | 娱乐/随手记录 |
+
+---
+
 ## [v3.5.2] - 2026-03-28 — 番茄页面极简风格重设计
 
 ### 优化

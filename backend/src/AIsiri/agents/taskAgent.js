@@ -77,7 +77,12 @@ async function taskAgent(state) {
 
   const createdTasks = [];
 
-  for (const taskTitle of tasks) {
+  for (const taskEntry of tasks) {
+    // 兼容旧格式（字符串）和新格式（对象含 priority/quadrant）
+    const taskTitle = typeof taskEntry === 'string' ? taskEntry : (taskEntry.title || '新任务');
+    const taskPriority = (typeof taskEntry === 'object' && taskEntry.priority) || 'medium';
+    const taskQuadrant = (typeof taskEntry === 'object' && Number.isInteger(taskEntry.quadrant)) ? taskEntry.quadrant : 2;
+
     try {
       const date = parseDate(extractedEntities);
       const timeBlock = parseTimeBlock(extractedEntities);
@@ -87,8 +92,8 @@ async function taskAgent(state) {
         title: taskTitle,
         userId,
         date,
-        priority: 'medium',
-        quadrant: 1,
+        priority: taskPriority,
+        quadrant: taskQuadrant,
         completed: false,
       };
 
@@ -118,6 +123,22 @@ async function taskAgent(state) {
         taskData.description = `地点：${extractedEntities.location}`;
       }
 
+      // 时间冲突检测：同一用户同日期同时间是否已有任务
+      const timeConflicts = [];
+      if (taskData.time && taskData.date) {
+        try {
+          const conflicting = await Task.find({
+            userId,
+            date: taskData.date,
+            time: taskData.time,
+            completed: false,
+          }).select('title time').lean();
+          for (const c of conflicting) {
+            timeConflicts.push({ existingTitle: c.title, time: c.time });
+          }
+        } catch (_) { /* 冲突检测失败不阻断创建 */ }
+      }
+
       const task = await Task.create(taskData);
       createdTasks.push({
         id: task._id,
@@ -125,13 +146,21 @@ async function taskAgent(state) {
         date: task.date,
         time: task.time,
         timeBlock: task.timeBlock,
+        conflicts: timeConflicts,
       });
 
-      logger.info('[TaskAgent] 任务创建成功', { taskId: task._id, title: task.title });
+      if (timeConflicts.length > 0) {
+        logger.warn('[TaskAgent] 时间冲突', { taskId: task._id, title: task.title, conflicts: timeConflicts });
+      } else {
+        logger.info('[TaskAgent] 任务创建成功', { taskId: task._id, title: task.title });
+      }
     } catch (error) {
       logger.error('[TaskAgent] 任务创建失败', { task: taskTitle, error: error.message });
     }
   }
+
+  // 汇总所有任务的冲突列表
+  const allConflicts = createdTasks.flatMap((t) => t.conflicts || []);
 
   return {
     agentResults: {
@@ -140,6 +169,7 @@ async function taskAgent(state) {
         tasks: createdTasks,
         task: createdTasks[0] || null,
         count: createdTasks.length,
+        conflicts: allConflicts,
       },
     },
   };
