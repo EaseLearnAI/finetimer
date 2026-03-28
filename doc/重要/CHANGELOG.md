@@ -4,6 +4,37 @@
 
 ---
 
+## [v3.5.0] - 2026-03-28 — 记忆持久化 + 情绪触发调度优化
+
+### 修复 Bug
+
+| 编号 | 问题 | 根因 | 修复方式 | 涉及文件 |
+|------|------|------|---------|---------|
+| B-28 | 用户说"记住我10点起床、13点健身"时，AI 给出情绪回应但没有真正保存偏好，下次完全不记得 | `memoryAgent.saveUserMemory` 只保存情绪历史，无任何偏好提取/持久化逻辑；UserProfile 也没有对应字段 | 新增 `UserProfile.preferences.customNotes` 字段；`saveUserMemory` 检测记忆关键词（"记住/我每天/我一般"等）并将原文追加到 customNotes（保留最近5条）；emotionAgent 和 scheduleAgent 读取 customNotes 并纳入上下文 | `backend/src/models/UserProfile.js`, `backend/src/AIsiri/agents/memoryAgent.js`, `backend/src/AIsiri/agents/emotionAgent.js` |
+| B-29 | 用户说"记住我..."时，由于句中含负面情绪，routerAgent 自动追加 SCHEDULE_PLANNING，导致记忆请求也触发日程调整（多余操作） | 情绪自动注入逻辑没有区分"情绪性短语"和"包含记忆关键词的请求" | routerAgent 情绪注入前检测 MEMORY_KEYWORDS，若命中则跳过注入 | `backend/src/AIsiri/agents/routerAgent.js` |
+| B-30 | "我好累呀"触发情绪调度后，任务被移到明天，从今日任务列表消失，用户以为"任务没更新" | scheduleAgent 的情绪触发 prompt 要求"推迟到明天"，任务日期变更后在今日视图中不再显示 | 改 prompt 策略：优先在今日内降低任务优先级/象限、移到今日更晚时段；仅在深夜无法后推时才允许移到明天 | `backend/src/AIsiri/agents/scheduleAgent.js` |
+
+### 修改文件
+
+| 文件 | 变更说明 |
+|------|---------|
+| `backend/src/AIsiri/agents/routerAgent.js` | 情绪注入增加 MEMORY_KEYWORDS 豁免条件（含"记住/我每天/我一般"等关键词时跳过自动注入） |
+| `backend/src/models/UserProfile.js` | preferences 新增 `customNotes: String` 字段 |
+| `backend/src/AIsiri/agents/memoryAgent.js` | `saveUserMemory` 新增 `extractCustomPreferences()`；`loadUserMemory` 返回 `customNotes` 字段 |
+| `backend/src/AIsiri/agents/emotionAgent.js` | `buildProfileContext` 新增 customNotes 展示块 |
+| `backend/src/AIsiri/agents/scheduleAgent.js` | 情绪触发 prompt 改为"今日内调整优先级/时段"为主；加入 customNotes 上下文；读取 `userProfile` 参数 |
+
+### 验证结果
+
+| 测试场景 | 期望 | 实际 |
+|----------|------|------|
+| "记住我10点起床、13点健身" | 不触发日程调整；偏好保存到 DB | ✅ intents=[TASK_CREATION]（无SCHEDULE_PLANNING）；customNotes 已写入 UserProfile |
+| 再次说"我好累呀" | 任务保留在今天，降优先级或移到今日更晚时段 | ✅ date=2026-03-28（今天），任务健身→13:00、给爸爸打电话→10:30，均保留在今日视图 |
+
+测试账号：phoneNumber `15691887650`，后端 `localhost:3000`，2/2 测试通过。
+
+---
+
 ## [v3.4.0] - 2026-03-28 — 情绪触发真实日程调整 + 撤销回退机制
 
 ### 修复 Bug

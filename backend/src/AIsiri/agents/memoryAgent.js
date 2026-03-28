@@ -54,6 +54,7 @@ async function loadUserMemory(state) {
     return {
       userProfile: {
         preferences: profile.preferences,
+        customNotes: profile.preferences?.customNotes || '',
         emotionTrend: profile.emotionHistory?.slice(-5) || [],
         interactionCount: profile.interactionCount,
         lastActiveAt: profile.lastActiveAt,
@@ -78,8 +79,24 @@ async function loadUserMemory(state) {
   }
 }
 
+// 从用户输入中提取并追加个人偏好到 customNotes
+function extractCustomPreferences(userInput, existingNotes) {
+  const MEMORY_KEYWORDS = ['记住', '记一下', '我每天', '我一般', '我习惯', '我平时', '我通常', '帮我记', '我喜欢'];
+  const isMemoryStatement = MEMORY_KEYWORDS.some((kw) => userInput.includes(kw));
+  if (!isMemoryStatement || userInput.length > 200) return null; // 太长的输入跳过（防止误存普通对话）
+
+  // 清理已有的重复条目（简单去重：如果已有相似内容就覆盖）
+  const timestamp = new Date().toLocaleDateString('zh-CN');
+  const newEntry = `[${timestamp}] ${userInput.replace(/\n/g, ' ').trim()}`;
+
+  // 保持最近 5 条偏好记录，超出则丢弃最早的
+  const existing = existingNotes ? existingNotes.split('\n').filter(Boolean) : [];
+  const updated = [...existing, newEntry].slice(-5);
+  return updated.join('\n');
+}
+
 async function saveUserMemory(state) {
-  const { userId, emotionState, requestId } = state;
+  const { userId, emotionState, userInput, requestId } = state;
 
   logger.info('[MemoryAgent] 保存用户记忆', { requestId, userId });
 
@@ -106,6 +123,15 @@ async function saveUserMemory(state) {
     } else if (negativeCount <= 1) {
       updateOps.$set['preferences.notificationLevel'] = 'normal';
       updateOps.$set['preferences.taskGranularity'] = 'medium';
+    }
+
+    // 检测并保存用户偏好陈述（如起床时间、健身时间等）
+    if (userInput) {
+      const updatedNotes = extractCustomPreferences(userInput, profile?.preferences?.customNotes || '');
+      if (updatedNotes !== null) {
+        updateOps.$set['preferences.customNotes'] = updatedNotes;
+        logger.info('[MemoryAgent] 保存用户个人偏好', { requestId, userId, notesLength: updatedNotes.length });
+      }
     }
 
     await UserProfile.findOneAndUpdate({ userId }, updateOps, { upsert: true });

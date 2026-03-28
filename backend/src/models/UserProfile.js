@@ -15,6 +15,8 @@ const userProfileSchema = new mongoose.Schema(
       preferredTimeBlocks: [{ type: String, enum: ['morning', 'forenoon', 'afternoon', 'evening'] }],
       notificationLevel: { type: String, enum: ['low', 'normal', 'high'], default: 'normal' },
       taskGranularity: { type: String, enum: ['fine', 'medium', 'coarse'], default: 'medium' },
+      // 用户自述的个人习惯偏好（如起床时间、健身时间等），LLM 可读
+      customNotes: { type: String, default: '' },
     },
     emotionHistory: [
       {

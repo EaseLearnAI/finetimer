@@ -139,6 +139,11 @@ function buildProfileContext(userProfile, emotionState) {
     parts.push(`- 当前情绪上下文：${emotionState.context}`);
   }
 
+  const customNotes = userProfile?.customNotes;
+  if (customNotes && customNotes.trim()) {
+    parts.push(`- 用户自述个人习惯：\n${customNotes.split('\n').map((l) => `  ${l}`).join('\n')}`);
+  }
+
   return parts.length > 0 ? parts.join('\n') : '- 暂无画像数据';
 }
 

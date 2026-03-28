@@ -146,13 +146,18 @@ async function routerAgent(state) {
     : [parsed.primaryIntent || 'CONVERSATION'];
 
   // 情绪自动注入：负面情绪（tired/stressed/sad/anxious）强度 ≥ 0.5 且没有调度/撤销意图 → 自动追加 SCHEDULE_PLANNING
+  // 但若用户是在陈述偏好/要求记忆，则跳过注入（避免"记住我10点起床"触发日程调整）
   const NEGATIVE_EMOTIONS = ['tired', 'stressed', 'sad', 'anxious'];
+  const MEMORY_KEYWORDS = ['记住', '记一下', '我每天', '我一般', '我习惯', '我平时', '我通常', '帮我记', '我喜欢'];
+  const isMemoryRequest = MEMORY_KEYWORDS.some((kw) => userInput.includes(kw));
+
   let emotionTriggeredSchedule = false;
   if (
     NEGATIVE_EMOTIONS.includes(emotionState.emotion) &&
     emotionState.confidence >= 0.5 &&
     !detectedIntents.includes('SCHEDULE_PLANNING') &&
-    !detectedIntents.includes('UNDO_SCHEDULE')
+    !detectedIntents.includes('UNDO_SCHEDULE') &&
+    !isMemoryRequest
   ) {
     detectedIntents = [...detectedIntents, 'SCHEDULE_PLANNING'];
     emotionTriggeredSchedule = true;
