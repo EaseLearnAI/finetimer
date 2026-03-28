@@ -35,10 +35,10 @@ export default {
       return {
         background: `conic-gradient(
           from 0deg,
-          rgba(255, 255, 255, 0.8) 0deg,
-          rgba(255, 255, 255, 0.8) ${degrees}deg,
-          rgba(255, 255, 255, 0.15) ${degrees}deg,
-          rgba(255, 255, 255, 0.15) 360deg
+          #667eea 0deg,
+          #667eea ${degrees}deg,
+          #e8ebff ${degrees}deg,
+          #e8ebff 360deg
         )`,
         transform: 'rotate(-90deg)'
       }
@@ -49,66 +49,70 @@ export default {
 
 <style scoped>
 .timer-circle {
-  width: 300px;
-  height: 300px;
+  width: 280px;
+  height: 280px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
+  background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 1px 0 rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15);
 }
 
 .timer-progress {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  bottom: 8px;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
   border-radius: 50%;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
 
+/* Inner white circle to create ring effect */
+.timer-progress::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  border-radius: 50%;
+  background: #fff;
+}
+
 .timer-display {
-  font-size: 52px;
+  font-size: 48px;
   font-weight: 700;
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Consolas', monospace;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   z-index: 10;
-  color: white;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+  color: #1c1c1e;
   letter-spacing: -1px;
 }
 
 .timer-label {
-  font-size: 18px;
-  opacity: 0.9;
+  font-size: 15px;
   z-index: 10;
-  color: white;
+  color: #8e8e93;
   font-weight: 500;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 430px) {
   .timer-circle {
-    width: 260px;
-    height: 260px;
+    width: 240px;
+    height: 240px;
   }
-  
+
   .timer-display {
-    font-size: 44px;
+    font-size: 40px;
   }
-  
+
   .timer-label {
-    font-size: 16px;
+    font-size: 13px;
   }
 }
 </style>

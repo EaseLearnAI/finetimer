@@ -384,21 +384,21 @@ export default {
 </script>
 
 <style scoped>
-  .app-container {
+.app-container {
   width: 100%;
   height: 100vh;
-  /* 使用更高级的渐变与真实背景图融合 */
-  background: 
-    linear-gradient(115deg, rgba(45, 104, 240, 0.92) 0%, rgba(128, 75, 216, 0.90) 50%, rgba(180, 70, 190, 0.88) 100%);
+  background: #f2f2f7;
   display: flex;
   flex-direction: column;
-  color: white;
+  color: #1c1c1e;
   overflow: hidden;
   position: relative;
 }
 
 .header {
-  padding: 20px 24px;
+  background: #fff;
+  padding: 16px 20px;
+  border-bottom: 0.5px solid #e5e5ea;
   position: relative;
   z-index: 10;
 }
@@ -407,28 +407,25 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .back-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: #f2f2f7;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 18px;
-  color: white;
+  transition: background 0.2s;
+  font-size: 16px;
+  color: #667eea;
 }
 
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.05);
+  background: #e5e5ea;
 }
 
 .back-btn:active {
@@ -436,25 +433,26 @@ export default {
 }
 
 .header h1 {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
   margin: 0;
   text-align: center;
   flex: 1;
+  color: #1c1c1e;
 }
 
 .header-spacer {
-  width: 44px;
+  width: 36px;
 }
 
 .task-name {
-  font-size: 18px;
-  opacity: 0.9;
+  font-size: 14px;
+  color: #8e8e93;
   text-align: center;
-  font-weight: 500;
+  font-weight: 400;
 }
 
-  .timer-container {
+.timer-container {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -467,63 +465,62 @@ export default {
 
 .timer-controls {
   display: flex;
-  gap: 32px;
-  margin-top: 50px;
+  gap: 28px;
+  margin-top: 48px;
   align-items: center;
 }
 
-  .control-btn {
-  width: 70px;
-  height: 70px;
-  border-radius: 35px;
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(20px);
-  border: 2px solid rgba(255, 255, 255, 0.30);
+.control-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  background: #fff;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 26px;
-  color: white;
-  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.18);
+  transition: all 0.2s ease;
+  font-size: 22px;
+  color: #667eea;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.12);
 }
 
 .control-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.18);
+  transform: translateY(-1px);
 }
 
 .control-btn:active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.96);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
 }
 
-  .start-btn {
-  background: rgba(76, 175, 80, 0.35);
-  border-color: rgba(76, 175, 80, 0.55);
+.start-btn {
+  color: #34c759;
+  box-shadow: 0 4px 16px rgba(52, 199, 89, 0.15);
 }
 
 .start-btn:hover {
-  background: rgba(76, 175, 80, 0.4);
+  box-shadow: 0 6px 20px rgba(52, 199, 89, 0.22);
 }
 
-  .pause-btn {
-  background: rgba(255, 193, 7, 0.35);
-  border-color: rgba(255, 193, 7, 0.55);
+.pause-btn {
+  color: #ff9500;
+  box-shadow: 0 4px 16px rgba(255, 149, 0, 0.15);
 }
 
 .pause-btn:hover {
-  background: rgba(255, 193, 7, 0.4);
+  box-shadow: 0 6px 20px rgba(255, 149, 0, 0.22);
 }
 
-  .stop-btn {
-  background: rgba(244, 67, 54, 0.35);
-  border-color: rgba(244, 67, 54, 0.55);
+.stop-btn {
+  color: #ff3b30;
+  box-shadow: 0 4px 16px rgba(255, 59, 48, 0.15);
 }
 
 .stop-btn:hover {
-  background: rgba(244, 67, 54, 0.4);
+  box-shadow: 0 6px 20px rgba(255, 59, 48, 0.22);
 }
 
 .control-btn.playing {
@@ -531,44 +528,35 @@ export default {
 }
 
 @keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-  }
+  0% { box-shadow: 0 0 0 0 rgba(255, 149, 0, 0.3); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 149, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 149, 0, 0); }
 }
 
 .session-info {
-  margin-top: 30px;
+  margin-top: 28px;
   text-align: center;
-  opacity: 0.9;
 }
 
 .session-count {
-  font-size: 18px;
-  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #3c3c43;
+  margin-bottom: 6px;
 }
 
 .session-message {
-  font-size: 14px;
-  opacity: 0.7;
+  font-size: 13px;
+  color: #8e8e93;
 }
 
 .motivational-quote {
-  position: absolute;
-  bottom: 120px;
-  left: 24px;
-  right: 24px;
+  padding: 16px 24px;
   text-align: center;
-  font-size: 16px;
-  opacity: 0.8;
+  font-size: 14px;
+  color: #8e8e93;
   font-style: italic;
-  padding: 0 20px;
-  z-index: 1;
+  line-height: 1.5;
 }
 
 /* Modal Styles */
@@ -578,8 +566,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -588,56 +575,48 @@ export default {
 }
 
 .modal-content {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 32px;
-  max-width: 400px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 24px;
+  max-width: 360px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  animation: modalSlideIn 0.3s ease-out;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  animation: modalSlideIn 0.25s ease-out;
 }
 
 @keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .modal-header h3 {
-  font-size: 22px;
-  font-weight: 700;
-  color: #2c3e50;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1c1c1e;
   margin: 0;
 }
 
 .modal-body {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .modal-body p {
-  font-size: 16px;
-  color: #5a6c7d;
-  margin: 0 0 16px 0;
+  font-size: 15px;
+  color: #3c3c43;
+  margin: 0 0 12px 0;
   line-height: 1.5;
 }
 
 .modal-time-info {
-  background: rgba(102, 126, 234, 0.1);
-  border-radius: 12px;
-  padding: 12px 16px;
+  background: rgba(102, 126, 234, 0.08);
+  border-radius: 10px;
+  padding: 10px 14px;
   font-size: 14px;
   color: #667eea;
   font-weight: 600;
@@ -645,125 +624,88 @@ export default {
 
 .modal-actions {
   display: flex;
-  gap: 16px;
-  justify-content: center;
+  gap: 12px;
 }
 
 .modal-btn {
   flex: 1;
-  padding: 14px 20px;
+  padding: 13px 16px;
   border: none;
-  border-radius: 16px;
-  font-size: 16px;
+  border-radius: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 52px;
+  gap: 6px;
+  min-height: 48px;
 }
 
 .abandon-btn {
-  background: rgba(244, 67, 54, 0.1);
-  color: #f44336;
-  border: 2px solid rgba(244, 67, 54, 0.2);
+  background: rgba(255, 59, 48, 0.08);
+  color: #ff3b30;
 }
 
 .abandon-btn:hover {
-  background: rgba(244, 67, 54, 0.15);
-  transform: translateY(-1px);
+  background: rgba(255, 59, 48, 0.13);
 }
 
 .complete-btn {
-  background: rgba(76, 175, 80, 0.1);
-  color: #4caf50;
-  border: 2px solid rgba(76, 175, 80, 0.2);
+  background: rgba(52, 199, 89, 0.08);
+  color: #34c759;
 }
 
 .complete-btn:hover {
-  background: rgba(76, 175, 80, 0.15);
-  transform: translateY(-1px);
+  background: rgba(52, 199, 89, 0.13);
 }
 
 @media (max-width: 430px) {
   .header {
-    padding: 16px 20px;
+    padding: 12px 16px;
   }
-  
+
   .back-btn {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .header h1 {
     font-size: 16px;
   }
-  
-  .header h1 {
+
+  .header-spacer {
+    width: 32px;
+  }
+
+  .timer-container {
+    padding: 24px 20px;
+  }
+
+  .timer-controls {
+    gap: 20px;
+    margin-top: 36px;
+  }
+
+  .control-btn {
+    width: 56px;
+    height: 56px;
     font-size: 20px;
   }
-  
-  .header-spacer {
-    width: 40px;
-  }
-  
-  .task-name {
-    font-size: 16px;
-  }
-  
-  .timer-container {
-    padding: 20px 20px;
-  }
-  
-  .timer-controls {
-    gap: 24px;
-    margin-top: 40px;
-  }
-  
-  .control-btn {
-    width: 60px;
-    height: 60px;
-    font-size: 22px;
-  }
-  
+
   .session-info {
     margin-top: 20px;
   }
-  
-  .session-count {
-    font-size: 16px;
-  }
-  
-  .session-message {
-    font-size: 13px;
-  }
-  
-  .motivational-quote {
-    bottom: 100px;
-    font-size: 14px;
-    padding: 0 16px;
-  }
-  
+
   .modal-content {
-    padding: 24px;
-    margin: 16px;
+    padding: 24px 20px;
   }
-  
-  .modal-header h3 {
-    font-size: 20px;
-  }
-  
-  .modal-body p {
-    font-size: 15px;
-  }
-  
+
   .modal-actions {
     flex-direction: column;
-    gap: 12px;
-  }
-  
-  .modal-btn {
-    min-height: 48px;
-    font-size: 15px;
+    gap: 10px;
   }
 }
 </style>
