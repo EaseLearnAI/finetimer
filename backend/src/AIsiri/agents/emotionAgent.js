@@ -277,7 +277,10 @@ async function emotionAgent(state) {
     };
   }
 
-  const modeHint = '';
+  // 情绪触发调度时：日程是后台自动帮忙，用户的核心需求是情感陪伴
+  const modeHint = emotionTriggeredSchedule
+    ? '\n【重要】本次日程调整是系统检测到用户情绪后在后台自动完成的，用户没有主动要求调度。请以情感陪伴为核心，先回应用户的情绪感受，可以在自然的语境中简短提一句已帮忙减轻了今日任务负担，但绝不要以日程报告开头，也不要只说日程相关内容。'
+    : '';
 
   const userPrompt = `${historyText ? `最近对话（当前第${conversationRound}轮）：\n${historyText}\n\n` : `这是第${conversationRound}轮对话。\n\n`}用户说："${userInput}"
 
@@ -285,7 +288,7 @@ async function emotionAgent(state) {
 ${emotionState.triggers.length > 0 ? `情绪触发因素：${emotionState.triggers.join('、')}` : ''}
 ${emotionState.context ? `情绪上下文：${emotionState.context}` : ''}
 
-${resultSummary.length > 0 ? `已完成的操作：\n${resultSummary.join('\n')}` : '无额外操作'}
+${resultSummary.length > 0 ? `后台已完成的操作（仅供参考，不要照搬）：\n${resultSummary.join('\n')}` : '无额外操作'}
 ${modeHint}
 请生成回复。`;
 
