@@ -123,9 +123,16 @@ async function scheduleAgent(state) {
       ? `\n=== 用户个人习惯（请遵守，如调整时间不要冲突）===\n${customNotes}\n`
       : '';
 
+    const now = new Date();
+    const currentHH = String(now.getHours()).padStart(2, '0');
+    const currentMM = String(now.getMinutes()).padStart(2, '0');
+    const currentTimeStr = `${currentHH}:${currentMM}`;
+    const currentTimeNote = `当前时间：${currentTimeStr}（今日 ${currentTimeStr} 之前的时段已过，不要在今天已过去的时间点安排任务）`;
+
     const userContent = emotionTriggeredSchedule
       ? `用户情绪："${emotionState.emotion}"，请自动减轻今日负担（无需理会用户原始输入的字面意思）
 目标日期：${targetDate}
+${currentTimeNote}
 
 === 今日任务（${targetDate}）===
 ${todayTaskSummary}
@@ -141,6 +148,7 @@ ${emotionNote}
 请帮用户推迟或降级今日非紧急任务，不要创建新任务。`
       : `用户请求："${userInput}"
 目标日期：${targetDate}
+${currentTimeNote}
 
 === 今日任务（${targetDate}）===
 ${todayTaskSummary}

@@ -192,7 +192,8 @@ export default {
   methods: {
     // 获取优先级文本
     getPriorityText(priority) {
-      return utils.getPriorityName(priority)
+      const map = { 'low': '低', 'medium': '中', 'high': '高' }
+      return map[priority] || (priority && priority.length <= 2 ? priority : '中')
     },
     
     // 获取时间段文本

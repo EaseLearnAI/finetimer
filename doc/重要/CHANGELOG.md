@@ -4,6 +4,26 @@
 
 ---
 
+## [v3.5.5] - 2026-03-29 — 修复时间线任务块范围 + 优先级兜底 + 调度时间感知
+
+### 修复 Bug
+
+| 编号 | 问题 | 根因 | 修复方式 |
+|------|------|------|---------|
+| B-35 | 任务时间线显示"16:00-18:00"而非"16:00-17:00" | Task.vue processTasks 用 `timeBlock.endTime`（时段边界18:00）作为结束时间 | 改为优先用 `task.time` + 1小时（`addHour`）拼接，与普通任务保持一致 |
+| B-36 | 聊天卡片优先级仍显示"未知" | `getPriorityName` 在 priority 为 undefined 时返回'未知'，后端未重启导致 priority 字段未传 | MessageCard 本地实现 `getPriorityText`，fallback 改为'中'，兼容 undefined/null/原始字符串 |
+| B-37 | scheduleAgent 把任务安排到当天已过去的时间（如下午13:30已过还安排上午10:30） | scheduleAgent LLM prompt 没有传入当前时间，AI 不知道现在几点 | 在 userContent 中注入 `当前时间：HH:MM，不要在今日已过去时间点安排任务` |
+
+### 修改文件
+
+| 文件 | 变更说明 |
+|------|---------|
+| `timer/src/views/Task.vue` | processTasks 时间显示：`startTime = task.time \|\| timeBlock.startTime`，结束时间改为 `addHour(startTime)` |
+| `timer/src/components/AIsecretary/MessageCard.vue` | `getPriorityText` 直接映射 low/medium/high，fallback 为'中'而非'未知' |
+| `backend/src/AIsiri/agents/scheduleAgent.js` | userContent 头部注入当前时间字符串，提示 AI 不安排今日已过去的时段 |
+
+---
+
 ## [v3.5.4] - 2026-03-29 — 修复任务卡片优先级未知 + 时间显示错误
 
 ### 修复 Bug

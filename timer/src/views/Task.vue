@@ -47,6 +47,7 @@
           :time-blocks="timeBlocks"
           @task-click="openPomodoro"
           @task-toggle="toggleTask"
+          @task-longpress="openActionSheet"
         />
       </div>
       
@@ -56,6 +57,7 @@
         :quadrants="quadrants"
         @task-click="openPomodoro"
         @task-toggle="toggleTask"
+        @task-longpress="openActionSheet"
       />
     </div>
     
@@ -75,12 +77,36 @@
       </div>
     </div>
     
-    <!-- Add Task Modal -->
+    <!-- Add / Edit Task Modal -->
     <AddTaskModal
       :visible="showAddModal"
+      :edit-task="editingTask"
       @close="closeAddTask"
       @submit="handleAddTask"
     />
+
+    <!-- Action Sheet (长按任务后弹出) -->
+    <teleport to="body">
+      <transition name="sheet-fade">
+        <div v-if="actionSheetTask" class="action-sheet-overlay" @click="closeActionSheet">
+          <transition name="sheet-slide">
+            <div class="action-sheet" @click.stop>
+              <div class="action-sheet-title">{{ actionSheetTask.title }}</div>
+              <button class="action-sheet-btn" @click="handleEditTask">
+                <font-awesome-icon icon="edit" class="action-sheet-icon" />
+                编辑任务
+              </button>
+              <div class="action-sheet-divider"></div>
+              <button class="action-sheet-btn danger" @click="handleDeleteTask">
+                <font-awesome-icon icon="trash" class="action-sheet-icon" />
+                删除任务
+              </button>
+              <button class="action-sheet-cancel" @click="closeActionSheet">取消</button>
+            </div>
+          </transition>
+        </div>
+      </transition>
+    </teleport>
     
     <!-- Voice Clone Modal -->
     <VoiceCloneModal
@@ -183,7 +209,9 @@ export default {
       ],
       showVoiceCloneModal: false,
       hasClonedVoice: false,
-      showAIVoiceModal: false
+      showAIVoiceModal: false,
+      actionSheetTask: null,
+      editingTask: null
     }
   },
   computed: {
@@ -321,10 +349,11 @@ export default {
         
         // 判断是AI生成的日程还是用户生成的日程
         if (task.timeBlock && task.timeBlock.startTime) {
-          // AI生成的日程，使用timeBlock.startTime作为判断标准
-          const hour = parseInt(task.timeBlock.startTime.split(':')[0]);
-          taskTimeDisplay = `${task.timeBlock.startTime} - ${task.timeBlock.endTime || this.addHour(task.timeBlock.startTime)}`;
-          
+          // AI生成的日程：优先用 task.time（具体点），没有则用 timeBlock.startTime
+          const startTime = task.time || task.timeBlock.startTime;
+          const hour = parseInt(startTime.split(':')[0]);
+          taskTimeDisplay = `${startTime} - ${this.addHour(startTime)}`;
+
           if (hour >= 6 && hour < 12) {
             targetTimeBlockType = 'morning';
           } else if (hour >= 12 && hour < 18) {
@@ -332,7 +361,7 @@ export default {
           } else if ((hour >= 18 && hour < 24) || hour < 6) {
             targetTimeBlockType = 'evening';
           }
-          console.log(`🎯 [TaskPage] AI生成任务"${task.title}"根据startTime计算时间块类型: ${targetTimeBlockType}`);
+          console.log(`🎯 [TaskPage] AI生成任务"${task.title}"时间: ${taskTimeDisplay}, 时段: ${targetTimeBlockType}`);
         } else if (task.time && task.time.trim()) {
           // 用户生成的日程，使用time作为判断标准
           const hour = parseInt(task.time.split(':')[0]);
@@ -540,35 +569,71 @@ export default {
       this.sidebarOpen = !this.sidebarOpen
     },
     openAddTask() {
+      this.editingTask = null
       this.showAddModal = true
     },
     closeAddTask() {
       this.showAddModal = false
+      this.editingTask = null
+    },
+    // ActionSheet
+    openActionSheet(task) {
+      this.actionSheetTask = task
+    },
+    closeActionSheet() {
+      this.actionSheetTask = null
+    },
+    handleEditTask() {
+      this.editingTask = this.actionSheetTask
+      this.closeActionSheet()
+      this.showAddModal = true
+    },
+    async handleDeleteTask() {
+      const task = this.actionSheetTask
+      this.closeActionSheet()
+      try {
+        await api.tasks.deleteTask(task.id)
+        await this.fetchTasks()
+      } catch (error) {
+        console.error('❌ [TaskPage] 删除任务失败:', error)
+      }
     },
     async handleAddTask(taskData) {
       try {
-        console.log('🔄 [TaskPage] 开始创建任务:', taskData);
-        
         const userId = this.currentUserId
         if (!userId) {
           console.warn('⚠️ [TaskPage] 未登录，跳转到登录页')
           this.$router.replace({ path: '/auth/login', query: { redirect: this.$route.fullPath } })
           return
         }
-        
-        const response = await api.tasks.createTask({
-          title: taskData.title,
-          description: taskData.description || '',
-          priority: taskData.priority || 'medium',
-          completed: false,
-          quadrant: taskData.quadrant,
-          date: taskData.date,
-          time: taskData.time,
-          userId,
-          timeBlockType: taskData.timeBlockType,
-          isScheduled: taskData.isScheduled
-        })
-        console.log('✅ [TaskPage] 任务创建成功:', response)
+
+        if (taskData.isEdit) {
+          console.log('🔄 [TaskPage] 开始更新任务:', taskData)
+          const response = await api.tasks.updateTask(taskData.id, {
+            title: taskData.title,
+            quadrant: taskData.quadrant,
+            date: taskData.date,
+            time: taskData.time,
+            timeBlockType: taskData.timeBlockType,
+            isScheduled: taskData.isScheduled
+          })
+          console.log('✅ [TaskPage] 任务更新成功:', response)
+        } else {
+          console.log('🔄 [TaskPage] 开始创建任务:', taskData)
+          const response = await api.tasks.createTask({
+            title: taskData.title,
+            description: taskData.description || '',
+            priority: taskData.priority || 'medium',
+            completed: false,
+            quadrant: taskData.quadrant,
+            date: taskData.date,
+            time: taskData.time,
+            userId,
+            timeBlockType: taskData.timeBlockType,
+            isScheduled: taskData.isScheduled
+          })
+          console.log('✅ [TaskPage] 任务创建成功:', response)
+        }
         
         // 重新获取任务列表
         await this.fetchTasks()
@@ -965,5 +1030,107 @@ export default {
   .date-title {
     font-size: 15px;
   }
+}
+
+/* ── Action Sheet ── */
+.action-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 3000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.action-sheet {
+  width: 100%;
+  padding: 0 12px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-sheet-title {
+  text-align: center;
+  font-size: 13px;
+  color: #8e8e93;
+  padding: 12px 16px 4px;
+  font-weight: 400;
+}
+
+.action-sheet-btn {
+  width: 100%;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  border: none;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 400;
+  color: #007aff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.action-sheet-btn:active {
+  background: rgba(230, 230, 235, 0.96);
+}
+
+.action-sheet-btn.danger {
+  color: #ff3b30;
+}
+
+.action-sheet-divider {
+  height: 0.5px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: -4px 0;
+}
+
+.action-sheet-icon {
+  font-size: 16px;
+}
+
+.action-sheet-cancel {
+  width: 100%;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  border: none;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #007aff;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.action-sheet-cancel:active {
+  background: rgba(230, 230, 235, 0.96);
+}
+
+/* ActionSheet 动画 */
+.sheet-fade-enter-active,
+.sheet-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.sheet-fade-enter-from,
+.sheet-fade-leave-to {
+  opacity: 0;
+}
+
+.sheet-slide-enter-active,
+.sheet-slide-leave-active {
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.sheet-slide-enter-from,
+.sheet-slide-leave-to {
+  transform: translateY(100%);
 }
 </style>
