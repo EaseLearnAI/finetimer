@@ -40,7 +40,8 @@ function buildAgentGraph() {
   // 加载记忆 → 中央路由
   graph.addEdge('loadMemory', 'router');
 
-  // 中央路由 → 条件分发到各智能体
+  // 中央路由 → 条件分发
+  // 注意：taskAgent 必须先于 scheduleAgent 完成，避免 scheduleAgent 读不到刚创建的任务
   graph.addConditionalEdges('router', routeDecision, {
     taskAgent: 'taskAgent',
     scheduleAgent: 'scheduleAgent',
@@ -48,8 +49,13 @@ function buildAgentGraph() {
     emotionAgent: 'emotionAgent',
   });
 
-  // 各专项智能体 → 情感陪伴（聚合）
-  graph.addEdge('taskAgent', 'emotionAgent');
+  // taskAgent 完成后 → 如果同时有 SCHEDULE_PLANNING，再跑 scheduleAgent，否则直接到 emotionAgent
+  graph.addConditionalEdges('taskAgent', taskThenScheduleOrEmotion, {
+    scheduleAgent: 'scheduleAgent',
+    emotionAgent: 'emotionAgent',
+  });
+
+  // scheduleAgent / undoAgent → 情感陪伴（聚合）
   graph.addEdge('scheduleAgent', 'emotionAgent');
   graph.addEdge('undoAgent', 'emotionAgent');
 
@@ -58,6 +64,18 @@ function buildAgentGraph() {
   graph.addEdge('saveMemory', END);
 
   return graph.compile();
+}
+
+/**
+ * taskAgent 完成后的路由：
+ * 如果 detectedIntents 里还有 SCHEDULE_PLANNING，则继续跑 scheduleAgent；
+ * 否则直接去 emotionAgent。
+ */
+function taskThenScheduleOrEmotion(state) {
+  if (state.detectedIntents && state.detectedIntents.includes('SCHEDULE_PLANNING')) {
+    return 'scheduleAgent';
+  }
+  return 'emotionAgent';
 }
 
 let _compiledGraph = null;

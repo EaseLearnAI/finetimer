@@ -210,8 +210,13 @@ function routeDecision(state) {
     return ['undoAgent'];
   }
 
-  if (intents.includes('TASK_CREATION')) targets.push('taskAgent');
-  if (intents.includes('SCHEDULE_PLANNING')) targets.push('scheduleAgent');
+  if (intents.includes('TASK_CREATION')) {
+    // taskAgent 先跑；若同时有 SCHEDULE_PLANNING，graph.js 的 taskThenScheduleOrEmotion 会在 taskAgent 完成后接着跑 scheduleAgent
+    targets.push('taskAgent');
+  } else if (intents.includes('SCHEDULE_PLANNING')) {
+    // 无 TASK_CREATION 时直接路由到 scheduleAgent
+    targets.push('scheduleAgent');
+  }
 
   // 只有纯 CONVERSATION（无任务/日程智能体）时才直接路由到 emotionAgent。
   // TASK_CREATION / SCHEDULE_PLANNING 的情况下，graph.js 已硬编码

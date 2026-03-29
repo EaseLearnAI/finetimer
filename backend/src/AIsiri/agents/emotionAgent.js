@@ -204,38 +204,66 @@ async function emotionAgent(state) {
 
   const conversationRound = history.filter((h) => h.messageType === 'user').length + 1;
 
-  // 判断是否使用高效模式：有任务/日程结果 + 非强烈情绪 + 非纯对话
+  // 只要有任务/日程结果，一律走高效模式直接返回，不经 LLM，彻底杜绝编造时间
   const hasTaskOrScheduleResult = agentResults.taskCreation?.success || agentResults.schedulePlanning?.success;
   const isStrongEmotion = !['neutral'].includes(emotionState.emotion) && emotionState.confidence >= 0.6;
   const isPureConversation = primaryIntent === 'CONVERSATION' && !hasTaskOrScheduleResult;
-  const useEfficientMode = hasTaskOrScheduleResult && !isStrongEmotion && !isPureConversation;
 
-  // 高效模式：直接返回操作确认，不走 LLM，避免 AI 自作聪明地加大段情绪文字
-  if (useEfficientMode && resultSummary.length > 0) {
+  if (hasTaskOrScheduleResult) {
     const lines = [];
+
     if (agentResults.taskCreation?.success) {
       const tasks = agentResults.taskCreation.tasks || [];
       for (const t of tasks) {
-        const timeStr = t.time ? ` ${t.date} ${t.time}` : (t.date ? ` ${t.date}` : '');
+        const timeStr = t.time ? ` ${t.date} ${t.time}` : (t.date ? ` ${t.date}（未指定时间）` : '');
         lines.push(`✅ 已创建「${t.title}」${timeStr}`);
       }
       const conflicts = agentResults.taskCreation.conflicts || [];
       if (conflicts.length > 0) {
         const conflictDescs = conflicts.map((c) => `「${c.existingTitle}」(${c.time})`).join('、');
-        lines.push(`⚠️ 与 ${conflictDescs} 时间重叠，建议调整时间`);
+        lines.push(`⚠️ 与 ${conflictDescs} 时间重叠，建议调整`);
       }
     }
+
     if (agentResults.schedulePlanning?.success) {
       const exec = agentResults.schedulePlanning.executed;
+      const updated = exec?.updated || [];
+      const created = exec?.created || [];
+      const deleted = exec?.deleted || [];
       const ops = [];
-      if (exec?.updated?.length) ops.push(`调整 ${exec.updated.length} 个`);
-      if (exec?.created?.length) ops.push(`新增 ${exec.created.length} 个`);
-      if (exec?.deleted?.length) ops.push(`清理 ${exec.deleted.length} 个`);
+      if (updated.length) {
+        const detail = updated.map((t) => {
+          const timeStr = t.changes?.time ? ` → ${t.changes.time}` : (t.changes?.date ? ` → ${t.changes.date}` : '');
+          return `「${t.title}」${timeStr}`;
+        }).join('、');
+        ops.push(`调整：${detail}`);
+      }
+      if (created.length) ops.push(`新增 ${created.length} 个`);
+      if (deleted.length) ops.push(`清理 ${deleted.length} 个`);
       lines.push(`⏰ 日程已安排${ops.length ? '（' + ops.join('，') + '）' : ''}`);
     }
+
     if (agentResults.undo?.success) {
       lines.push(`↩️ 已恢复 ${agentResults.undo.restoredCount} 个任务`);
     }
+    if (agentResults.undo?.success === false) {
+      lines.push(`↩️ ${agentResults.undo.reason}`);
+    }
+
+    // 强烈情绪时追加一句简短关怀（不经 LLM，纯规则）
+    if (isStrongEmotion) {
+      const careMap = {
+        stressed: '任务已安排好，先深呼吸一下～',
+        tired: '已帮你整理好，记得休息一下。',
+        anxious: '放心，已经帮你计划好了。',
+        sad: '任务交给我，你先照顾好自己。',
+        angry: '都安排好了，你先缓一缓。',
+        confused: '已经帮你理清楚了。',
+      };
+      const care = careMap[emotionState.emotion] || '';
+      if (care) lines.push(care);
+    }
+
     const directReply = lines.join('\n');
     logger.info('[EmotionAgent] 高效模式直接返回', { requestId, directReply });
     return {
@@ -245,9 +273,7 @@ async function emotionAgent(state) {
     };
   }
 
-  const modeHint = hasTaskOrScheduleResult
-    ? '\n【操作已完成，先简要确认结果，再做情绪回应，总字数控制在150字以内，不要用 Markdown 格式】'
-    : '';
+  const modeHint = '';
 
   const userPrompt = `${historyText ? `最近对话（当前第${conversationRound}轮）：\n${historyText}\n\n` : `这是第${conversationRound}轮对话。\n\n`}用户说："${userInput}"
 
