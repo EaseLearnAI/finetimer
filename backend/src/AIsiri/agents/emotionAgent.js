@@ -151,6 +151,7 @@ async function emotionAgent(state) {
   const {
     userInput, userId, sessionId, emotionState, agentResults,
     extractedEntities, primaryIntent, requestId, userProfile,
+    emotionTriggeredSchedule,
   } = state;
 
   logger.info('[EmotionAgent] 开始情感处理', {
@@ -204,12 +205,15 @@ async function emotionAgent(state) {
 
   const conversationRound = history.filter((h) => h.messageType === 'user').length + 1;
 
-  // 只要有任务/日程结果，一律走高效模式直接返回，不经 LLM，彻底杜绝编造时间
+  // 情绪触发的调度（用户没有主动要求调度，是后台自动帮忙）→ 优先走 LLM 情感回应，
+  // 调度结果作为上下文传给 LLM，让它自然地融入回复。
+  // 仅当用户【主动】创建任务或请求日程调整时才走高效模式。
   const hasTaskOrScheduleResult = agentResults.taskCreation?.success || agentResults.schedulePlanning?.success;
   const isStrongEmotion = !['neutral'].includes(emotionState.emotion) && emotionState.confidence >= 0.6;
   const isPureConversation = primaryIntent === 'CONVERSATION' && !hasTaskOrScheduleResult;
 
-  if (hasTaskOrScheduleResult) {
+  // 情绪自动触发的调度 → 不走高效模式（让 LLM 生成情感回应，顺带提调度结果）
+  if (hasTaskOrScheduleResult && !emotionTriggeredSchedule) {
     const lines = [];
 
     if (agentResults.taskCreation?.success) {

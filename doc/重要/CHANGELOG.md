@@ -4,6 +4,22 @@
 
 ---
 
+## [v3.6.0] - 2026-03-29 — 情绪触发调度时恢复情感陪伴 LLM 回应
+
+### 修复
+
+| 项目 | 说明 |
+|------|------|
+| 情绪触发调度时无情感回应 | `emotionTriggeredSchedule=true` 时跳过高效模式，走 LLM 生成完整情感回应；调度结果作为 resultSummary 上下文传入，LLM 自然融入 |
+
+### 修改文件
+
+| 文件 | 变更说明 |
+|------|---------|
+| `backend/src/AIsiri/agents/emotionAgent.js` | 解构 `emotionTriggeredSchedule`；高效模式条件改为 `hasTaskOrScheduleResult && !emotionTriggeredSchedule` |
+
+---
+
 ## [v3.5.9] - 2026-03-29 — 修复 scheduleAgent 误删 taskAgent 新建任务
 
 ### 修复
