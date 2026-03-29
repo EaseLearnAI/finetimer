@@ -6,8 +6,10 @@
     </div>
     <div class="message-content">
       <!-- 普通文本消息（AI 消息渲染 markdown，用户消息纯文本） -->
-      <div v-if="isTextMessage && !message.isUser" class="message-text markdown-body" v-html="renderMarkdown(message.content)"></div>
-      <div v-else-if="isTextMessage && message.isUser" class="message-text">{{ message.content }}</div>
+      <div v-if="isTextMessage" class="message-text" :class="{ 'markdown-body': !message.isUser }">
+        <span v-if="message.isUser">{{ message.content }}</span>
+        <span v-else v-html="renderMarkdown(message.content)"></span>
+      </div>
       
       <!-- 图片消息 -->
       <div v-else-if="isImageMessage" class="image-message">
