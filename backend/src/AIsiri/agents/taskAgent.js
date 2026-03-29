@@ -123,18 +123,29 @@ async function taskAgent(state) {
         taskData.description = `地点：${extractedEntities.location}`;
       }
 
-      // 时间冲突检测：同一用户同日期同时间是否已有任务
+      // 时间冲突检测：同一用户同日期时间段重叠（新任务默认持续1小时）
       const timeConflicts = [];
       if (taskData.time && taskData.date) {
         try {
-          const conflicting = await Task.find({
+          const [newH, newM] = taskData.time.split(':').map(Number);
+          const newStart = newH * 60 + newM;
+          const newEnd = newStart + 60; // 默认持续1小时
+
+          const sameDayTasks = await Task.find({
             userId,
             date: taskData.date,
-            time: taskData.time,
+            time: { $exists: true, $ne: null, $ne: '' },
             completed: false,
           }).select('title time').lean();
-          for (const c of conflicting) {
-            timeConflicts.push({ existingTitle: c.title, time: c.time });
+
+          for (const c of sameDayTasks) {
+            const [cH, cM] = c.time.split(':').map(Number);
+            const cStart = cH * 60 + cM;
+            const cEnd = cStart + 60;
+            // 时间段重叠：新任务开始 < 已有结束 且 新任务结束 > 已有开始
+            if (newStart < cEnd && newEnd > cStart) {
+              timeConflicts.push({ existingTitle: c.title, time: c.time });
+            }
           }
         } catch (_) { /* 冲突检测失败不阻断创建 */ }
       }
