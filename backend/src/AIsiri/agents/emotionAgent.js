@@ -204,14 +204,49 @@ async function emotionAgent(state) {
 
   const conversationRound = history.filter((h) => h.messageType === 'user').length + 1;
 
-  // 判断是否使用高效模式：neutral 情绪 + 有任务/日程结果 + 非纯对话
+  // 判断是否使用高效模式：有任务/日程结果 + 非强烈情绪 + 非纯对话
   const hasTaskOrScheduleResult = agentResults.taskCreation?.success || agentResults.schedulePlanning?.success;
-  const isNeutral = emotionState.emotion === 'neutral' || emotionState.confidence < 0.4;
+  const isStrongEmotion = !['neutral'].includes(emotionState.emotion) && emotionState.confidence >= 0.6;
   const isPureConversation = primaryIntent === 'CONVERSATION' && !hasTaskOrScheduleResult;
-  const useEfficientMode = isNeutral && hasTaskOrScheduleResult && !isPureConversation;
+  const useEfficientMode = hasTaskOrScheduleResult && !isStrongEmotion && !isPureConversation;
 
-  const modeHint = useEfficientMode
-    ? '\n【⚡ 高效模式：请直接简洁确认操作结果，50字以内，禁止情绪性开头】'
+  // 高效模式：直接返回操作确认，不走 LLM，避免 AI 自作聪明地加大段情绪文字
+  if (useEfficientMode && resultSummary.length > 0) {
+    const lines = [];
+    if (agentResults.taskCreation?.success) {
+      const tasks = agentResults.taskCreation.tasks || [];
+      for (const t of tasks) {
+        const timeStr = t.time ? ` ${t.date} ${t.time}` : (t.date ? ` ${t.date}` : '');
+        lines.push(`✅ 已创建「${t.title}」${timeStr}`);
+      }
+      const conflicts = agentResults.taskCreation.conflicts || [];
+      if (conflicts.length > 0) {
+        const conflictDescs = conflicts.map((c) => `「${c.existingTitle}」(${c.time})`).join('、');
+        lines.push(`⚠️ 与 ${conflictDescs} 时间重叠，建议调整时间`);
+      }
+    }
+    if (agentResults.schedulePlanning?.success) {
+      const exec = agentResults.schedulePlanning.executed;
+      const ops = [];
+      if (exec?.updated?.length) ops.push(`调整 ${exec.updated.length} 个`);
+      if (exec?.created?.length) ops.push(`新增 ${exec.created.length} 个`);
+      if (exec?.deleted?.length) ops.push(`清理 ${exec.deleted.length} 个`);
+      lines.push(`⏰ 日程已安排${ops.length ? '（' + ops.join('，') + '）' : ''}`);
+    }
+    if (agentResults.undo?.success) {
+      lines.push(`↩️ 已恢复 ${agentResults.undo.restoredCount} 个任务`);
+    }
+    const directReply = lines.join('\n');
+    logger.info('[EmotionAgent] 高效模式直接返回', { requestId, directReply });
+    return {
+      finalResponse: directReply,
+      assistantName,
+      agentResults: { emotionSupport: { success: true, emotion: emotionState.emotion, intensity: emotionState.confidence } },
+    };
+  }
+
+  const modeHint = hasTaskOrScheduleResult
+    ? '\n【操作已完成，先简要确认结果，再做情绪回应，总字数控制在150字以内，不要用 Markdown 格式】'
     : '';
 
   const userPrompt = `${historyText ? `最近对话（当前第${conversationRound}轮）：\n${historyText}\n\n` : `这是第${conversationRound}轮对话。\n\n`}用户说："${userInput}"

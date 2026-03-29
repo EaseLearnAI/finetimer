@@ -5,8 +5,9 @@
       <img :src="aiAssistantLogo" alt="AI assistant" class="avatar-image" />
     </div>
     <div class="message-content">
-      <!-- 普通文本消息 -->
-      <div v-if="isTextMessage" class="message-text">{{ message.content }}</div>
+      <!-- 普通文本消息（AI 消息渲染 markdown，用户消息纯文本） -->
+      <div v-if="isTextMessage && !message.isUser" class="message-text markdown-body" v-html="renderMarkdown(message.content)"></div>
+      <div v-else-if="isTextMessage && message.isUser" class="message-text">{{ message.content }}</div>
       
       <!-- 图片消息 -->
       <div v-else-if="isImageMessage" class="image-message">
@@ -140,6 +141,10 @@
 
 <script>
 import { MESSAGE_TYPES, utils } from '../../AIsiri/types/index.js'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+
+marked.setOptions({ breaks: true, gfm: true })
 
 export default {
   name: 'MessageCard',
@@ -190,6 +195,11 @@ export default {
   },
   
   methods: {
+    renderMarkdown(content) {
+      if (!content) return ''
+      return DOMPurify.sanitize(marked.parse(content))
+    },
+
     // 获取优先级文本
     getPriorityText(priority) {
       const map = { 'low': '低', 'medium': '中', 'high': '高' }
@@ -317,9 +327,34 @@ export default {
 }
 
 .message-text {
-  font-size: 16px;
-  line-height: 1.4;
+  font-size: 15px;
+  line-height: 1.5;
   word-wrap: break-word;
+}
+
+/* Markdown 渲染样式 */
+.markdown-body :deep(p) {
+  margin: 0 0 6px 0;
+}
+.markdown-body :deep(p:last-child) {
+  margin-bottom: 0;
+}
+.markdown-body :deep(strong) {
+  font-weight: 600;
+}
+.markdown-body :deep(ul),
+.markdown-body :deep(ol) {
+  margin: 4px 0 4px 16px;
+  padding: 0;
+}
+.markdown-body :deep(li) {
+  margin-bottom: 2px;
+  line-height: 1.5;
+}
+.markdown-body :deep(br) {
+  display: block;
+  content: '';
+  margin-top: 4px;
 }
 
 /* 图片消息样式 */

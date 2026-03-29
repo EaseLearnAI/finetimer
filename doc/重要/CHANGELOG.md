@@ -4,6 +4,24 @@
 
 ---
 
+## [v3.5.7] - 2026-03-29 — Markdown 渲染 + 高效模式重构
+
+### 新功能 / 修复
+
+| 项目 | 说明 |
+|------|------|
+| Markdown 渲染 | MessageCard AI 消息改用 marked + DOMPurify 渲染，**粗体/列表/换行**正确显示 |
+| 高效模式重构 | emotionAgent 在有任务/日程结果且非强烈情绪时，**跳过 LLM 调用**，直接返回"✅ 已创建/⏰ 日程已安排"确认文本，彻底消除无关情绪长文 |
+
+### 修改文件
+
+| 文件 | 变更说明 |
+|------|---------|
+| `timer/src/components/AIsecretary/MessageCard.vue` | AI 消息改用 `v-html` + `renderMarkdown()`；引入 marked + DOMPurify；添加 `.markdown-body` 样式 |
+| `backend/src/AIsiri/agents/emotionAgent.js` | 高效模式改为代码直接拼返回值，不再仅靠 prompt hint；强情绪（confidence≥0.6 非neutral）才走 LLM 情绪回应 |
+
+---
+
 ## [v3.5.6] - 2026-03-29 — 任务时间段重叠冲突检测
 
 ### 新功能
