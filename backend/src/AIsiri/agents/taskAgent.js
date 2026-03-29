@@ -146,6 +146,8 @@ async function taskAgent(state) {
         date: task.date,
         time: task.time,
         timeBlock: task.timeBlock,
+        priority: task.priority,
+        quadrant: task.quadrant,
         conflicts: timeConflicts,
       });
 

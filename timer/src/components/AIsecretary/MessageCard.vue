@@ -60,7 +60,7 @@
             </div>
             <div class="task-detail">
               <span class="label">时间安排：</span>
-              <span class="value">{{ getTimeBlockText(message.metadata.task.timeBlock) }}</span>
+              <span class="value">{{ getTimeBlockText(message.metadata.task.timeBlock, message.metadata.task.time) }}</span>
             </div>
           </div>
         </div>
@@ -196,10 +196,12 @@ export default {
     },
     
     // 获取时间段文本
-    getTimeBlockText(timeBlock) {
-      if (!timeBlock) return '未安排'
-      
+    getTimeBlockText(timeBlock, specificTime) {
+      if (!timeBlock) return specificTime || '未安排'
       const typeName = utils.getTimeBlockName(timeBlock.timeBlockType)
+      if (specificTime) {
+        return `${typeName} · ${specificTime}`
+      }
       if (timeBlock.startTime && timeBlock.endTime) {
         return `${typeName} (${timeBlock.startTime}-${timeBlock.endTime})`
       }

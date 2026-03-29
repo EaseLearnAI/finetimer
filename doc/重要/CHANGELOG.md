@@ -4,6 +4,24 @@
 
 ---
 
+## [v3.5.4] - 2026-03-29 — 修复任务卡片优先级未知 + 时间显示错误
+
+### 修复 Bug
+
+| 编号 | 问题 | 根因 | 修复方式 |
+|------|------|------|---------|
+| B-33 | AI 聊天卡片显示"优先级：未知" | taskAgent push 进 createdTasks 的对象漏了 `priority`/`quadrant` 字段，前端拿到 undefined | 在 taskAgent.js push 时补上 `priority: task.priority, quadrant: task.quadrant` |
+| B-34 | AI 聊天卡片时间显示"下午 (14:00-18:00)" 而非 "下午 · 14:00" | MessageCard.vue `getTimeBlockText` 直接用 `timeBlock.endTime`（时间段边界），未使用任务的具体 `time` 字段 | `getTimeBlockText` 新增 `specificTime` 参数，优先显示 `task.time`，格式改为"下午 · 14:00" |
+
+### 修改文件
+
+| 文件 | 变更说明 |
+|------|---------|
+| `backend/src/AIsiri/agents/taskAgent.js` | createdTasks push 对象加 priority/quadrant 字段 |
+| `timer/src/components/AIsecretary/MessageCard.vue` | getTimeBlockText 增加 specificTime 参数；模板传入 task.time |
+
+---
+
 ## [v3.5.3] - 2026-03-29 — 任务创建自动推断优先级和象限
 
 ### 新功能
