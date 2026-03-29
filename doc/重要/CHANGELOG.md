@@ -4,6 +4,22 @@
 
 ---
 
+## [v3.5.9] - 2026-03-29 — 修复 scheduleAgent 误删 taskAgent 新建任务
+
+### 修复
+
+| 项目 | 说明 |
+|------|------|
+| 新建任务被误删 | `autoDeduplicateTasks` 和 `executeRecommendations` 新增 `protectedIds` 集合；taskAgent 刚创建的任务 ID 写入保护集，scheduleAgent 去重和 LLM 推荐 delete 均跳过这些 ID |
+
+### 修改文件
+
+| 文件 | 变更说明 |
+|------|---------|
+| `backend/src/AIsiri/agents/scheduleAgent.js` | 读取 `state.agentResults.taskCreation.tasks` 构建 `protectedIds`；`autoDeduplicateTasks` 和 `executeRecommendations` 接受并尊重保护集 |
+
+---
+
 ## [v3.5.7] - 2026-03-29 — Markdown 渲染 + 高效模式重构
 
 ### 新功能 / 修复

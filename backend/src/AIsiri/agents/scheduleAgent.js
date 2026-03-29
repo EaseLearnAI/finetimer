@@ -172,7 +172,14 @@ ${emotionNote}
 
     const schedule = result.parsed || { analysis: '日程分析完成', recommendations: [], summary: result.content };
 
-    const dedupeResults = await autoDeduplicateTasks(tasks, userId, requestId);
+    // 收集 taskAgent 刚创建的任务 ID，防止被误删
+    const newlyCreatedTasks = state.agentResults?.taskCreation?.tasks || [];
+    const protectedIds = new Set(newlyCreatedTasks.map((t) => String(t.taskId || t.id || t._id)).filter(Boolean));
+    if (protectedIds.size > 0) {
+      logger.info('[ScheduleAgent] 受保护的新创建任务ID', { requestId, protectedIds: [...protectedIds] });
+    }
+
+    const dedupeResults = await autoDeduplicateTasks(tasks, userId, requestId, protectedIds);
 
     // 保存快照（仅在有实际推荐操作时，供撤销回退使用）
     const recommendations = schedule.recommendations || [];
@@ -223,7 +230,8 @@ ${emotionNote}
       userId,
       targetDate,
       tasks,
-      requestId
+      requestId,
+      protectedIds
     );
 
     executionResults.deleted.push(...dedupeResults.deleted);
@@ -268,7 +276,7 @@ ${emotionNote}
   }
 }
 
-async function executeRecommendations(recommendations, userId, targetDate, existingTasks, requestId) {
+async function executeRecommendations(recommendations, userId, targetDate, existingTasks, requestId, protectedIds = new Set()) {
   const results = { updated: [], created: [], deleted: [], failed: [], summary: '' };
 
   for (const rec of recommendations) {
@@ -346,6 +354,10 @@ async function executeRecommendations(recommendations, userId, targetDate, exist
             results.failed.push({ title: rec.taskTitle, reason: '未找到匹配任务' });
             break;
           }
+          if (protectedIds.has(String(task._id))) {
+            logger.info('[ScheduleAgent] 跳过删除受保护的新任务', { requestId, taskId: task._id, title: task.title });
+            break;
+          }
           await Task.findByIdAndDelete(task._id);
           results.deleted.push({ id: task._id, title: task.title });
           const idx = existingTasks.findIndex((t) => String(t._id) === String(task._id));
@@ -381,7 +393,7 @@ function findTaskByTitle(tasks, title) {
   return partial || null;
 }
 
-async function autoDeduplicateTasks(existingTasks, userId, requestId) {
+async function autoDeduplicateTasks(existingTasks, userId, requestId, protectedIds = new Set()) {
   const deleted = [];
   const groups = {};
 
@@ -395,7 +407,8 @@ async function autoDeduplicateTasks(existingTasks, userId, requestId) {
 
   for (const [, group] of Object.entries(groups)) {
     if (group.length <= 1) continue;
-    const toRemove = group.slice(1);
+    // 受保护的任务（刚由 taskAgent 创建）永远保留，删除其他重复项
+    const toRemove = group.slice(1).filter((t) => !protectedIds.has(String(t._id)));
     for (const dup of toRemove) {
       try {
         await Task.findByIdAndDelete(dup._id);
